@@ -198,6 +198,16 @@ describe("submitSchema", () => {
       false,
     );
   });
+
+  it("rejects malformed (non-base64) XDR", () => {
+    expect(submitSchema.safeParse({ signedXdr: "!!!", intent: "join" }).success).toBe(false);
+  });
+
+  it("accepts a valid base64 XDR string", () => {
+    expect(submitSchema.safeParse({ signedXdr: "AAAAAgAAAAA=", intent: "deploy" }).success).toBe(
+      true,
+    );
+  });
 });
 
 // --- joinSchema ---

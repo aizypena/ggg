@@ -1,16 +1,23 @@
 import { z } from "zod";
-import { stellarPublicKey, stellarContractId, i128Amount, signedXdr } from "@/lib/stellar";
+import {
+  stellarPublicKey,
+  stellarContractId,
+  i128Amount,
+  signedXdr as signedXdrSchema,
+} from "@/lib/stellar";
+import { Asset, TournamentStatus } from "@/generated/prisma/enums";
 
 // Re-export Phase 2 Stellar validators for convenience
-export { stellarPublicKey, stellarContractId, i128Amount, signedXdr };
+export { stellarPublicKey, stellarContractId, i128Amount };
+export { signedXdrSchema as signedXdr };
 
 // --- Enums ---
 
-export const assetSchema = z.enum(["XLM", "USDC"]);
-export type Asset = z.infer<typeof assetSchema>;
+export const assetSchema = z.enum(Asset);
+export type AssetValue = z.infer<typeof assetSchema>;
 
-export const statusSchema = z.enum(["DRAFT", "ACTIVE", "FINISHED", "CANCELLED"]);
-export type TournamentStatus = z.infer<typeof statusSchema>;
+export const statusSchema = z.enum(TournamentStatus);
+export type TournamentStatusValue = z.infer<typeof statusSchema>;
 
 // --- Coercing amount: JSON sends strings; BigInt end-to-end ---
 
@@ -58,7 +65,7 @@ export type CreateTournamentInput = z.infer<typeof createTournamentSchema>;
 // --- submitSchema ---
 
 export const submitSchema = z.object({
-  signedXdr: z.string().min(1),
+  signedXdr: signedXdrSchema,
   intent: z.enum(["deploy", "join", "finalize", "cancel"]),
 });
 export type SubmitInput = z.infer<typeof submitSchema>;

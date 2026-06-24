@@ -63,7 +63,8 @@ export default function RegisterPage() {
       }
 
       router.push("/tournaments");
-    } catch {
+    } catch (err) {
+      console.error(err);
       setFormError("Something went wrong. Please try again.");
     } finally {
       setPending(false);

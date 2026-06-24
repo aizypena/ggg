@@ -143,6 +143,25 @@ describe("/register page", () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 
+  it("shows conflict error when register API returns HTTP 200 with body {ok:false, error:'CONFLICT'}", async () => {
+    // This exercises the normal conflict path: HTTP 200 but body ok:false (username taken)
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ ok: false, error: "CONFLICT" }),
+    });
+
+    render(<RegisterPage />);
+    await userEvent.type(screen.getByLabelText(/username/i), "alice");
+    await userEvent.type(screen.getByLabelText(/password/i), "securepassword");
+    fireEvent.click(screen.getByRole("button", { name: /create account/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(/could not create account/i);
+    });
+    expect(mockSignIn).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
   it("redirects to /tournaments on successful register + auto-login", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,

@@ -128,3 +128,52 @@ fn initialize_requires_organizer_auth() {
     escrow.initialize(&organizer, &referee, &token_addr, &1i128, &bps(&env));
 }
 
+fn init_default<'a>(
+    env: &'a Env,
+    escrow: &EscrowClient<'a>,
+    token_addr: &Address,
+    organizer: &Address,
+    referee: &Address,
+) {
+    escrow.initialize(organizer, referee, token_addr, &1_000_000i128, &bps(env));
+}
+
+#[test]
+fn join_transfers_fee_and_records_player() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+
+    let player = Address::generate(&env);
+    sac.mint(&player, &5_000_000i128); // fund the player
+
+    escrow.join_tournament(&player);
+
+    assert_eq!(escrow.get_pool(), 1_000_000i128);
+    // fee left player, sits in contract escrow.
+    assert_eq!(token.balance(&player), 4_000_000i128);
+    assert_eq!(token.balance(&escrow.address), 1_000_000i128);
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #9)")] // AlreadyJoined
+fn join_rejects_double_join() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    let player = Address::generate(&env);
+    sac.mint(&player, &5_000_000i128);
+    escrow.join_tournament(&player);
+    escrow.join_tournament(&player); // second time → panic
+}
+

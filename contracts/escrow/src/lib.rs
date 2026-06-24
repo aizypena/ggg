@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contracterror, contractimpl, contracttype, panic_with_error, Address, Env, Vec};
+use soroban_sdk::{contract, contracterror, contractimpl, contracttype, panic_with_error, symbol_short, token, Address, Env, Symbol, Vec};
 
 #[contracttype]
 #[derive(Clone)]
@@ -99,6 +99,45 @@ impl Escrow {
             .instance()
             .get(&DataKey::Finished)
             .unwrap_or(false)
+    }
+
+    pub fn join_tournament(env: Env, player: Address) {
+        player.require_auth();
+
+        let storage = env.storage().instance();
+        if !storage.has(&DataKey::Organizer) {
+            panic_with_error!(&env, Error::NotInitialized);
+        }
+        let finished: bool = storage.get(&DataKey::Finished).unwrap_or(false);
+        let cancelled: bool = storage.get(&DataKey::Cancelled).unwrap_or(false);
+        if finished {
+            panic_with_error!(&env, Error::AlreadyFinished);
+        }
+        if cancelled {
+            panic_with_error!(&env, Error::AlreadyCancelled);
+        }
+
+        let mut players: Vec<Address> = storage.get(&DataKey::Players).unwrap();
+        if players.contains(&player) {
+            panic_with_error!(&env, Error::AlreadyJoined);
+        }
+
+        let token: Address = storage.get(&DataKey::Token).unwrap();
+        let entry_fee: i128 = storage.get(&DataKey::EntryFee).unwrap();
+
+        let client = token::TokenClient::new(&env, &token);
+        client.transfer(&player, &env.current_contract_address(), &entry_fee);
+
+        players.push_back(player.clone());
+        storage.set(&DataKey::Players, &players);
+
+        let pool_after = (players.len() as i128)
+            .checked_mul(entry_fee)
+            .expect("pool overflow");
+        env.events().publish(
+            (Symbol::new(&env, "registered"), player),
+            pool_after,
+        );
     }
 }
 

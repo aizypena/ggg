@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import {
   buildDeployInitializeTx,
+  buildFinalizeTx,
   buildJoinTx,
   explorerContractUrl,
   explorerTxUrl,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/stellar";
 import type {
   CreateTournamentInput,
+  FinalizeInput,
   ListQueryInput,
   SubmitInput,
 } from "@/lib/validation/tournament";
@@ -196,6 +198,42 @@ export async function buildJoin(
   const { xdr, network } = await buildJoinTx({
     contractId: t.contractId,
     playerAddress,
+  });
+  return { unsignedXdr: xdr, network };
+}
+
+export async function buildFinalize(
+  id: string,
+  input: FinalizeInput,
+  walletAddress: string,
+): Promise<{ unsignedXdr: string; network: string }> {
+  const t = await prisma.tournament.findUnique({
+    where: { id },
+    include: { participants: true },
+  });
+  if (!t) {
+    throw Object.assign(new Error("Tournament not found"), { status: 404 });
+  }
+  if (t.refereeAddr !== walletAddress) {
+    throw Object.assign(new Error("Only the referee can finalize"), { status: 403 });
+  }
+  if (t.status !== "ACTIVE" || !t.contractId) {
+    throw Object.assign(new Error("Tournament is not finalizable"), { status: 409 });
+  }
+  const registered = new Set(t.participants.map((p) => p.playerAddr));
+  for (const addr of [input.first, input.second, input.third]) {
+    if (!registered.has(addr)) {
+      throw Object.assign(new Error(`Winner ${addr} is not a registered participant`), {
+        status: 422,
+      });
+    }
+  }
+  const { xdr, network } = await buildFinalizeTx({
+    contractId: t.contractId,
+    refereeAddress: t.refereeAddr,
+    first: input.first,
+    second: input.second,
+    third: input.third,
   });
   return { unsignedXdr: xdr, network };
 }

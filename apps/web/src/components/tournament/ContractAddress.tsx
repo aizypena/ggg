@@ -7,17 +7,24 @@ function truncate(v: string): string {
 
 export function ContractAddress({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(value);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setCopyFailed(true);
+      setTimeout(() => setCopyFailed(false), 1500);
+    }
   }
 
   return (
     <button
       type="button"
       aria-label={`Copy address ${value}`}
+      title={copyFailed ? "Copy failed" : undefined}
       onClick={handleCopy}
       className="data-mono inline-flex items-center gap-2 rounded-lg bg-surface-container px-2 py-1 text-acid-yellow focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric-violet-strong"
     >
@@ -26,6 +33,7 @@ export function ContractAddress({ value }: { value: string }) {
         {copied ? "check" : "content_copy"}
       </span>
       {copied && <span className="sr-only">Copied!</span>}
+      {copyFailed && <span className="sr-only">Copy failed</span>}
     </button>
   );
 }

@@ -55,4 +55,17 @@ describe("ContractAddress", () => {
     const btn = screen.getByRole("button", { name: /copy address/i });
     expect(btn).toHaveAttribute("aria-label", `Copy address ${FULL_ADDRESS}`);
   });
+
+  it("does not throw and does not enter copied state when clipboard write fails", async () => {
+    writeText.mockRejectedValueOnce(new Error("NotAllowedError"));
+    render(<ContractAddress value={FULL_ADDRESS} />);
+    const btn = screen.getByRole("button", { name: /copy address/i });
+    fireEvent.click(btn);
+    // Wait for the rejection to be handled
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith(FULL_ADDRESS));
+    // Should NOT show "Copied!" — clipboard failed
+    expect(screen.queryByText("Copied!")).not.toBeInTheDocument();
+    // Should show graceful failure feedback
+    expect(screen.getByText("Copy failed")).toBeInTheDocument();
+  });
 });

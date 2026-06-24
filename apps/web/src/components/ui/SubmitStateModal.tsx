@@ -17,6 +17,14 @@ const phaseLabel: Record<Phase, string> = {
   error: "FAILED",
 };
 
+const phaseAriaLabel: Record<Phase, string> = {
+  idle: "Transaction",
+  signing: "Signing transaction",
+  submitting: "Submitting transaction",
+  success: "Transaction settled",
+  error: "Transaction failed",
+};
+
 export function SubmitStateModal({ open, phase, message, onClose }: SubmitStateModalProps) {
   if (!open) return null;
 
@@ -27,7 +35,7 @@ export function SubmitStateModal({ open, phase, message, onClose }: SubmitStateM
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Transaction in progress"
+      aria-label={phaseAriaLabel[phase]}
       className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-md"
     >
       {/* Spinner — hidden on success/error, respects prefers-reduced-motion via globals.css */}

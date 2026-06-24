@@ -77,4 +77,28 @@ describe("SubmitStateModal", () => {
     const status = screen.getByRole("status");
     expect(status.textContent).toBe("");
   });
+
+  it("dialog aria-label reflects the success phase", () => {
+    render(<SubmitStateModal open={true} phase="success" />);
+    const dialog = screen.getByRole("dialog", { name: "Transaction settled" });
+    expect(dialog).toBeInTheDocument();
+  });
+
+  it("dialog aria-label reflects the error phase", () => {
+    render(<SubmitStateModal open={true} phase="error" />);
+    const dialog = screen.getByRole("dialog", { name: "Transaction failed" });
+    expect(dialog).toBeInTheDocument();
+  });
+
+  it("dialog aria-label reflects the signing phase", () => {
+    render(<SubmitStateModal open={true} phase="signing" />);
+    const dialog = screen.getByRole("dialog", { name: "Signing transaction" });
+    expect(dialog).toBeInTheDocument();
+  });
+
+  it("dialog aria-label reflects the submitting phase", () => {
+    render(<SubmitStateModal open={true} phase="submitting" />);
+    const dialog = screen.getByRole("dialog", { name: "Submitting transaction" });
+    expect(dialog).toBeInTheDocument();
+  });
 });

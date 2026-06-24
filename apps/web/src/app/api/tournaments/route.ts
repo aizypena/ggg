@@ -1,8 +1,9 @@
 import { type NextRequest } from "next/server";
 import { ok, err } from "@/lib/api";
-import { requireUser } from "@/lib/auth-guards";
+import { requireUser, AuthError } from "@/lib/auth-guards";
 import { assertSameOrigin, CsrfError } from "@/lib/csrf";
 import { rateLimit } from "@/lib/rate-limit";
+import { StellarError } from "@/lib/stellar";
 import { createTournamentSchema } from "@/lib/validation/tournament";
 import { createTournament } from "@/server/services/tournaments";
 
@@ -16,11 +17,16 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   // 2. Auth: must be an authenticated ORGANIZER.
+  // requireUser redirects (NEXT_REDIRECT) when unauthenticated, throws AuthError(403) when wrong role.
   let user: { id: string; username: string; role: string };
   try {
     user = await requireUser("ORGANIZER");
-  } catch {
-    return err("UNAUTHORIZED", "Authentication required", 401);
+  } catch (e) {
+    if (e instanceof AuthError) {
+      const code = e.status === 403 ? "FORBIDDEN" : "UNAUTHORIZED";
+      return err(code, e.message, e.status);
+    }
+    throw e; // re-throw NEXT_REDIRECT and any other non-auth errors
   }
 
   // 3. Rate-limit per user.
@@ -40,9 +46,17 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   // 5. Delegate to service.
-  const data = await createTournament(parsed.data, user.id);
+  let data: { tournamentId: string; unsignedXdr: string; network: string };
+  try {
+    data = await createTournament(parsed.data, user.id);
+  } catch (e) {
+    if (e instanceof StellarError) {
+      return err("STELLAR_ERROR", e.message, 422);
+    }
+    return err("INTERNAL_ERROR", "Could not create tournament", 500);
+  }
 
-  // 6. Serialize BigInt fields to string in the response envelope.
+  // 6. Return the created tournament envelope.
   return ok(
     {
       tournamentId: data.tournamentId,

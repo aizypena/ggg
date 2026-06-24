@@ -15,6 +15,14 @@ vi.mock("@/lib/auth-guards", () => ({
     username: "organizer",
     role: "ORGANIZER",
   })),
+  AuthError: class AuthError extends Error {
+    readonly status: number;
+    constructor(message: string, status: number) {
+      super(message);
+      this.name = "AuthError";
+      this.status = status;
+    }
+  },
 }));
 vi.mock("@/lib/csrf", () => ({
   assertSameOrigin: vi.fn(),
@@ -41,7 +49,7 @@ vi.mock("@/lib/env", () => ({
 }));
 
 import { prisma } from "@/lib/db";
-import { requireUser } from "@/lib/auth-guards";
+import { requireUser, AuthError } from "@/lib/auth-guards";
 import { assertSameOrigin } from "@/lib/csrf";
 import { rateLimit } from "@/lib/rate-limit";
 import { buildDeployInitializeTx, resolveSacAddress } from "@/lib/stellar";
@@ -161,14 +169,27 @@ describe("POST /api/tournaments", () => {
     expect(json.ok).toBe(false);
   });
 
-  it("rejects unauthenticated requests with 401", async () => {
-    requireUserMock.mockRejectedValue(new Error("Not authenticated"));
+  it("re-throws NEXT_REDIRECT when unauthenticated (requireUser redirects, not returns 401)", async () => {
+    // requireUser calls redirect("/login") when unauthenticated — Next.js throws a NEXT_REDIRECT
+    // error that the framework handles. The route must re-throw it (not swallow it as 401).
+    const redirectError = Object.assign(new Error("NEXT_REDIRECT"), { digest: "NEXT_REDIRECT" });
+    requireUserMock.mockRejectedValue(redirectError);
+
+    await expect(POST(makeReq(validBody) as Parameters<typeof POST>[0])).rejects.toThrow(
+      "NEXT_REDIRECT",
+    );
+    expect(tournamentCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects wrong-role requests with 403", async () => {
+    requireUserMock.mockRejectedValue(new AuthError("Forbidden", 403));
 
     const res = await POST(makeReq(validBody) as Parameters<typeof POST>[0]);
     const json = await res.json();
 
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
     expect(json.ok).toBe(false);
+    expect(json.error.code).toBe("FORBIDDEN");
     expect(tournamentCreate).not.toHaveBeenCalled();
   });
 

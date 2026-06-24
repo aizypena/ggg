@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import {
   buildDeployInitializeTx,
+  buildJoinTx,
   explorerContractUrl,
   explorerTxUrl,
   resolveSacAddress,
@@ -179,6 +180,24 @@ export async function listTournaments(userId: string, q: ListQueryInput) {
   const nextCursor = rows.length > q.take ? (rows[q.take]?.id ?? null) : null;
 
   return { items, nextCursor };
+}
+
+export async function buildJoin(
+  id: string,
+  playerAddress: string,
+): Promise<{ unsignedXdr: string; network: string }> {
+  const t = await prisma.tournament.findUnique({ where: { id } });
+  if (!t) {
+    throw Object.assign(new Error("Tournament not found"), { status: 404 });
+  }
+  if (t.status !== "ACTIVE" || !t.contractId) {
+    throw Object.assign(new Error("Tournament is not open for joining"), { status: 409 });
+  }
+  const { xdr, network } = await buildJoinTx({
+    contractId: t.contractId,
+    playerAddress,
+  });
+  return { unsignedXdr: xdr, network };
 }
 
 export async function getTournamentDetail(id: string) {

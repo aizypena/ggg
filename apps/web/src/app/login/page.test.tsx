@@ -97,6 +97,20 @@ describe("/login page", () => {
     expect(alertText).not.toMatch(/incorrect password/i);
   });
 
+  it("shows generic auth error when signIn returns ok:false with null error (!res?.ok branch)", async () => {
+    mockSignIn.mockResolvedValueOnce({ ok: false, error: null });
+
+    render(<LoginPage />);
+    await userEvent.type(screen.getByLabelText(/username/i), "validuser");
+    await userEvent.type(screen.getByLabelText(/password/i), "validpassword123");
+    fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(/invalid username or password/i);
+    });
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
   it("calls signIn with correct credentials on valid form submit", async () => {
     mockSignIn.mockResolvedValueOnce({ ok: true, error: null });
 

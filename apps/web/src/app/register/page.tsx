@@ -40,7 +40,9 @@ export default function RegisterPage() {
         body: JSON.stringify({ username: parsed.data.username, password: parsed.data.password }),
       });
 
-      const json = (await res.json()) as { ok: boolean; error?: string };
+      const json = res.ok
+        ? ((await res.json()) as { ok: boolean; error?: string })
+        : { ok: false as const };
 
       if (!json.ok) {
         setFormError("Could not create account. Please try a different username.");

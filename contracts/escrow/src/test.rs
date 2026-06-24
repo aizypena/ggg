@@ -208,6 +208,7 @@ fn finalize_pays_60_30_10() {
     assert_eq!(token.balance(&p2), 10_000_000 - 1_000_000 + 900_000);   // 9_900_000
     assert_eq!(token.balance(&p3), 10_000_000 - 1_000_000 + 300_000);   // 9_300_000
     assert_eq!(token.balance(&escrow.address), 0i128); // pool fully distributed
+    assert_eq!(escrow.get_reward(&p1), 1_800_000i128);
 }
 
 #[test]
@@ -319,5 +320,32 @@ fn get_pool_tracks_joins() {
     assert_eq!(escrow.get_pool(), 1_000_000i128);
     let _b = join(&env, &escrow, &sac);
     assert_eq!(escrow.get_pool(), 2_000_000i128);
+}
+
+#[test]
+fn get_reward_returns_placement_amounts() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    let p1 = join(&env, &escrow, &sac);
+    let p2 = join(&env, &escrow, &sac);
+    let p3 = join(&env, &escrow, &sac); // pool 3_000_000
+
+    // Before finalize: zero.
+    assert_eq!(escrow.get_reward(&p1), 0i128);
+
+    escrow.finalize_results(&p1, &p2, &p3);
+    assert_eq!(escrow.get_reward(&p1), 1_800_000i128);
+    assert_eq!(escrow.get_reward(&p2), 900_000i128);
+    assert_eq!(escrow.get_reward(&p3), 300_000i128);
+    // Non-winner registered player → 0; here all 3 are winners, so use a
+    // stranger:
+    let stranger = Address::generate(&env);
+    assert_eq!(escrow.get_reward(&stranger), 0i128);
 }
 

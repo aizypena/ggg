@@ -101,6 +101,50 @@ impl Escrow {
             .unwrap_or(false)
     }
 
+    pub fn get_reward(env: Env, player: Address) -> i128 {
+        let storage = env.storage().instance();
+        let finished: bool = storage.get(&DataKey::Finished).unwrap_or(false);
+        if !finished {
+            return 0;
+        }
+        let winners: Option<(Address, Address, Address)> = storage.get(&DataKey::Winners);
+        let (first, second, third) = match winners {
+            Some(w) => w,
+            None => return 0,
+        };
+
+        let players: Vec<Address> = storage.get(&DataKey::Players).unwrap();
+        let entry_fee: i128 = storage.get(&DataKey::EntryFee).unwrap();
+        let pool: i128 = (players.len() as i128)
+            .checked_mul(entry_fee)
+            .expect("pool overflow");
+        let dist: Vec<u32> = storage.get(&DataKey::DistributionBps).unwrap();
+
+        let mut amounts: Vec<i128> = Vec::new(&env);
+        let mut distributed: i128 = 0;
+        for b in dist.iter() {
+            let amt = pool
+                .checked_mul(b as i128)
+                .expect("mul overflow")
+                .checked_div(10_000)
+                .expect("div");
+            amounts.push_back(amt);
+            distributed = distributed.checked_add(amt).expect("dist overflow");
+        }
+        let dust = pool.checked_sub(distributed).expect("dust underflow");
+        let first_amt = amounts.get(0).unwrap().checked_add(dust).expect("dust add");
+
+        if player == first {
+            first_amt
+        } else if player == second {
+            amounts.get(1).unwrap()
+        } else if player == third {
+            amounts.get(2).unwrap()
+        } else {
+            0
+        }
+    }
+
     pub fn join_tournament(env: Env, player: Address) {
         player.require_auth();
 

@@ -1,3 +1,10 @@
 packages:
   - "apps/*"
   - "contracts/*"
+
+# Allow native build scripts for these deps (pnpm 10 blocks build scripts by default).
+onlyBuiltDependencies:
+  - argon2
+  - "@prisma/client"
+  - prisma
+  - esbuild

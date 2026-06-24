@@ -130,6 +130,24 @@ Inherited from `AGENT.md`; non-negotiable, not re-stated per phase:
 
 ---
 
-## 6. Next step
+## 6. Cross-phase reconciliation (authoritative)
 
-Proceed to **writing-plans** for **Phase 0 (Monorepo & foundation)** only. Later phases get their own brainstorm (where needed) → plan → implement cycles, in the order above.
+All seven phase plans now exist under `docs/superpowers/plans/2026-06-24-ggg-phaseN-*.md`. They were authored in parallel; the following deltas were surfaced during authoring and are **binding** — where a phase plan and this list disagree, this list wins. Apply each delta in the phase named.
+
+1. **USDC env keys (Phase 0).** SPEC §14's env list predates the XLM+USDC decision and defines only `NATIVE_SAC_ADDRESS`. Phase 0's Zod env loader and `.env.example` MUST also define `USDC_ISSUER` (G-address of the USDC issuer, per network) and `USDC_SAC_ADDRESS` (the issuer's Stellar Asset Contract id). Phase 2 `resolveSacAddress("USDC")` returns `USDC_SAC_ADDRESS`; Phase 4 SEP-7 URI construction reads `USDC_ISSUER` for the `asset_issuer` param. Add both to the Railway env matrix in Phase 6.
+
+2. **API envelope helper signature (Phase 0).** `apps/web/src/lib/api.ts` exports `ok(data, status = 200)` and `err(code, message, status = 400)` returning `{ ok, data?, error?: { code, message } }`. Phases 3 and 4 consume exactly this signature.
+
+3. **Schema additions ship as new migrations in Phase 5 (never edit Phase 0's applied migration).** Phase 5 adds: a `SubscriberCursor` model `{ contractId String @id, lastLedger Int, updatedAt DateTime @updatedAt }` for at-least-once cursor recovery, and `@@unique([txHash, type])` on `ContractEvent` for idempotent event dedupe. Both are additive migrations created during Phase 5.
+
+4. **Contract bindings command (Phase 1 → Phase 2).** Generate TS bindings with stellar-cli 26: `stellar contract bindings typescript --wasm <wasm> --output-dir apps/web/src/contract-client --overwrite` (SPEC §4's `npx @stellar/stellar-sdk generate` phrasing is older). Phase 2's builders import from `apps/web/src/contract-client`; if the generated client's method/export names differ from the assumed `new Client({...})` / static `Client.deploy(...)` shape, adjust Phase 2 Tasks 7–8 call sites — validation/pipeline/return shapes are unaffected.
+
+5. **Login throttling lives inside NextAuth (Phase 3).** Because NextAuth owns the login route, per-IP/per-user rate limiting is enforced by calling `rateLimit()` at the top of the Credentials `authorize()` callback, not in a standalone route handler.
+
+6. **`get_pool` form (Phase 1).** Returns the deterministic `players.len() * entry_fee`; `finalize_results` and `get_reward` compute splits off the same value for internal consistency.
+
+## 7. Status & next step
+
+Brainstorm → spec → all seven plans: **complete.** 92 tasks across the seven plans.
+
+Recommended execution order follows the dependency graph (§4): Phase 0 → (Phase 1 ∥ Phase 3) → Phase 2 → Phase 4 → Phase 5 → Phase 6. Each phase is executed task-by-task via `superpowers:subagent-driven-development` (fresh subagent + review per task) or `superpowers:executing-plans` (batched with checkpoints).

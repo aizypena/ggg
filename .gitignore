@@ -19,6 +19,7 @@ build/
 
 # rust
 target/
+test_snapshots/
 
 # prisma
 apps/web/src/generated/

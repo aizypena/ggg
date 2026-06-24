@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { makeFakeRpc, errorSim, txStatus } from "./__mocks__/rpc";
-import { StellarError } from "./errors";
 
 const rpcRef: { current: ReturnType<typeof makeFakeRpc> } = { current: makeFakeRpc() };
 vi.mock("./client", () => ({

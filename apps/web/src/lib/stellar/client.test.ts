@@ -12,8 +12,20 @@ vi.mock("@/lib/env", () => ({
 const rpcCtor = vi.fn();
 const horizonCtor = vi.fn();
 vi.mock("@stellar/stellar-sdk", () => ({
-  rpc: { Server: class { constructor(url: string) { rpcCtor(url); } } },
-  Horizon: { Server: class { constructor(url: string) { horizonCtor(url); } } },
+  rpc: {
+    Server: class {
+      constructor(url: string) {
+        rpcCtor(url);
+      }
+    },
+  },
+  Horizon: {
+    Server: class {
+      constructor(url: string) {
+        horizonCtor(url);
+      }
+    },
+  },
 }));
 
 beforeEach(() => {

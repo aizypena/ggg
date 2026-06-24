@@ -17,7 +17,10 @@ vi.mock("./client", () => ({
   networkName: () => "testnet",
 }));
 vi.mock("@/lib/env", () => ({
-  env: { SOROBAN_RPC_URL: "https://soroban-testnet.stellar.org" },
+  env: {
+    SOROBAN_RPC_URL: "https://soroban-testnet.stellar.org",
+    ESCROW_WASM_HASH: "0101010101010101010101010101010101010101010101010101010101010101",
+  },
 }));
 
 const G = Keypair.random().publicKey();
@@ -60,7 +63,11 @@ describe("buildFinalizeTx", () => {
   it("passes referee as source and three winners", async () => {
     const { buildFinalizeTx } = await import("./builders");
     const res = await buildFinalizeTx({
-      contractId: C, refereeAddress: G, first: G, second: G2, third: G3,
+      contractId: C,
+      refereeAddress: G,
+      first: G,
+      second: G2,
+      third: G3,
     });
     expect(res.xdr).toBe("FINALIZE_XDR");
     expect(finalizeFn).toHaveBeenCalledWith({ first: G, second: G2, third: G3 });
@@ -98,8 +105,11 @@ describe("buildDeployInitializeTx", () => {
     const { buildDeployInitializeTx } = await import("./builders");
     await expect(
       buildDeployInitializeTx({
-        organizerAddress: G, refereeAddress: G, tokenAddr: C,
-        entryFee: 1n, distributionBps: [6000, 3000, 1000],
+        organizerAddress: G,
+        refereeAddress: G,
+        tokenAddr: C,
+        entryFee: 1n,
+        distributionBps: [6000, 3000, 1000],
       }),
     ).rejects.toMatchObject({ code: "INVALID_INPUT" });
   });
@@ -107,8 +117,11 @@ describe("buildDeployInitializeTx", () => {
     const { buildDeployInitializeTx } = await import("./builders");
     await expect(
       buildDeployInitializeTx({
-        organizerAddress: G, refereeAddress: G2, tokenAddr: C,
-        entryFee: 1n, distributionBps: [6000, 3000, 999],
+        organizerAddress: G,
+        refereeAddress: G2,
+        tokenAddr: C,
+        entryFee: 1n,
+        distributionBps: [6000, 3000, 999],
       }),
     ).rejects.toMatchObject({ code: "INVALID_INPUT" });
   });
@@ -116,8 +129,11 @@ describe("buildDeployInitializeTx", () => {
     const { buildDeployInitializeTx } = await import("./builders");
     await expect(
       buildDeployInitializeTx({
-        organizerAddress: G, refereeAddress: G2, tokenAddr: C,
-        entryFee: 0n, distributionBps: [6000, 3000, 1000],
+        organizerAddress: G,
+        refereeAddress: G2,
+        tokenAddr: C,
+        entryFee: 0n,
+        distributionBps: [6000, 3000, 1000],
       }),
     ).rejects.toMatchObject({ code: "INVALID_INPUT" });
   });

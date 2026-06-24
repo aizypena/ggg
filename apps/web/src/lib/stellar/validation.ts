@@ -23,5 +23,9 @@ export const signedXdr = z
   });
 
 export const distributionBps = z
-  .tuple([z.number().int().nonnegative(), z.number().int().nonnegative(), z.number().int().nonnegative()])
+  .tuple([
+    z.number().int().nonnegative(),
+    z.number().int().nonnegative(),
+    z.number().int().nonnegative(),
+  ])
   .refine(([a, b, c]) => a + b + c === 10000, { message: "distributionBps must sum to 10000" });

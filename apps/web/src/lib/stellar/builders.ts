@@ -9,7 +9,11 @@ import {
 } from "./validation";
 import { StellarError } from "./errors";
 
-function parse<T>(schema: { safeParse: (v: unknown) => { success: boolean } }, v: unknown, label: string): void {
+function parse(
+  schema: { safeParse: (v: unknown) => { success: boolean } },
+  v: unknown,
+  label: string,
+): void {
   if (!schema.safeParse(v).success) throw new StellarError("INVALID_INPUT", `Invalid ${label}`);
 }
 
@@ -42,7 +46,11 @@ export async function buildFinalizeTx(params: {
 }): Promise<{ xdr: string; network: string }> {
   parse(stellarContractId, params.contractId, "contractId");
   parse(stellarPublicKey, params.refereeAddress, "refereeAddress");
-  for (const [k, v] of [["first", params.first], ["second", params.second], ["third", params.third]] as const) {
+  for (const [k, v] of [
+    ["first", params.first],
+    ["second", params.second],
+    ["third", params.third],
+  ] as const) {
     parse(stellarPublicKey, v, k);
   }
   const winners = new Set([params.first, params.second, params.third]);
@@ -82,20 +90,18 @@ export async function buildDeployInitializeTx(params: {
   if (params.organizerAddress === params.refereeAddress) {
     throw new StellarError("INVALID_INPUT", "organizer must differ from referee");
   }
-  const assembled = await Client.deploy(
-    {
-      wasmHash: env.ESCROW_WASM_HASH,
-      publicKey: params.organizerAddress,
-      networkPassphrase: networkPassphrase(),
-      rpcUrl: env.SOROBAN_RPC_URL,
-    },
-    {
-      organizer: params.organizerAddress,
-      referee: params.refereeAddress,
-      token: params.tokenAddr,
-      entry_fee: params.entryFee,
-      distribution_bps: params.distributionBps,
-    },
-  );
+  if (!env.ESCROW_WASM_HASH) {
+    throw new StellarError("INVALID_INPUT", "ESCROW_WASM_HASH not configured");
+  }
+  // TODO: the generated Phase 1 binding deploys a contract but does not accept
+  // init args (the contract exposes `initialize`, not a Soroban constructor).
+  // A follow-up should either regenerate bindings with constructor support or
+  // build a multi-op transaction (createCustomContract + initialize) manually.
+  const assembled = await Client.deploy({
+    wasmHash: env.ESCROW_WASM_HASH,
+    publicKey: params.organizerAddress,
+    networkPassphrase: networkPassphrase(),
+    rpcUrl: env.SOROBAN_RPC_URL,
+  });
   return { xdr: assembled.toXDR(), network: networkName() };
 }

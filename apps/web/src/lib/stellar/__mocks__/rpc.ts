@@ -1,4 +1,12 @@
-import { vi } from "vitest";
+import { vi, type Mock } from "vitest";
+
+export interface FakeRpc {
+  simulateTransaction: Mock<(s: unknown) => Promise<Record<string, unknown>>>;
+  getTransaction: Mock<(hash: string) => Promise<Record<string, unknown>>>;
+  sendTransaction: Mock<(tx: unknown) => Promise<Record<string, unknown>>>;
+  getLatestLedger: Mock<() => Promise<Record<string, unknown>>>;
+  [key: string]: unknown;
+}
 
 export function successSim() {
   // shape mirrors rpc.Api.SimulateTransactionSuccessResponse (no `error` key)
@@ -23,14 +31,14 @@ export function txStatus(status: "SUCCESS" | "FAILED" | "NOT_FOUND") {
   });
 }
 
-export function makeFakeRpc(overrides: Record<string, unknown> = {}) {
+export function makeFakeRpc(overrides: Record<string, unknown> = {}): FakeRpc {
   return {
     simulateTransaction: successSim(),
     getTransaction: txStatus("SUCCESS"),
     sendTransaction: vi.fn().mockResolvedValue({ status: "PENDING", hash: "HASH" }),
     getLatestLedger: vi.fn().mockResolvedValue({ sequence: 1 }),
     ...overrides,
-  } as never;
+  } as FakeRpc;
 }
 
 export function makeFakeHorizon(overrides: Record<string, unknown> = {}) {

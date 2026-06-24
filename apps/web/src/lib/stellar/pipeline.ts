@@ -1,4 +1,4 @@
-import { rpc, TransactionBuilder, type Transaction } from "@stellar/stellar-sdk";
+import { rpc, TransactionBuilder, type Transaction, Address } from "@stellar/stellar-sdk";
 import { getRpc, networkPassphrase } from "./client";
 import { signedXdr as signedXdrSchema } from "./validation";
 import { StellarError } from "./errors";
@@ -56,8 +56,7 @@ function extractContractId(
   try {
     // deploy returns the new contract Address scVal; decode to a C-address string.
     // Address.fromScVal(...).toString() yields the C... id; guarded so polling never throws.
-    const { Address } = require("@stellar/stellar-sdk");
-    return Address.fromScVal(got.returnValue).toString();
+    return Address.fromScVal(got.returnValue as never).toString();
   } catch {
     return undefined;
   }

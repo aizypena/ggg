@@ -27,10 +27,104 @@ fn create_escrow(env: &Env) -> EscrowClient<'_> {
     EscrowClient::new(env, &id)
 }
 
-#[test]
-fn crate_compiles() {
-    let env = Env::default();
-    let admin = Address::generate(&env);
-    let (_token_addr, _sac, _token) = create_token(&env, &admin);
-    let _escrow = create_escrow(&env);
+fn bps(env: &Env) -> Vec<u32> {
+    Vec::from_array(env, [6000u32, 3000u32, 1000u32])
 }
+
+#[test]
+fn initialize_stores_state() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, _sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+
+    escrow.initialize(&organizer, &referee, &token_addr, &1_000_000i128, &bps(&env));
+
+    // get_pool reflects zero players initially.
+    assert_eq!(escrow.get_pool(), 0i128);
+    assert_eq!(escrow.is_finished(), false);
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #2)")] // BadDistributionLen
+fn initialize_rejects_bad_bps_len() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, _sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    let bad = Vec::from_array(&env, [6000u32, 4000u32]); // len 2
+    escrow.initialize(&organizer, &referee, &token_addr, &1i128, &bad);
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #3)")] // BadDistributionSum
+fn initialize_rejects_bad_bps_sum() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, _sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    let bad = Vec::from_array(&env, [6000u32, 3000u32, 500u32]); // sum 9500
+    escrow.initialize(&organizer, &referee, &token_addr, &1i128, &bad);
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #4)")] // NonPositiveEntryFee
+fn initialize_rejects_zero_entry_fee() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, _sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    escrow.initialize(&organizer, &referee, &token_addr, &0i128, &bps(&env));
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #5)")] // OrganizerIsReferee
+fn initialize_rejects_organizer_equals_referee() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, _sac, _token) = create_token(&env, &admin);
+    let same = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    escrow.initialize(&same, &same, &token_addr, &1i128, &bps(&env));
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #1)")] // AlreadyInitialized
+fn initialize_rejects_double_init() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, _sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    escrow.initialize(&organizer, &referee, &token_addr, &1i128, &bps(&env));
+    escrow.initialize(&organizer, &referee, &token_addr, &1i128, &bps(&env));
+}
+
+#[test]
+#[should_panic] // missing auth → AuthError
+fn initialize_requires_organizer_auth() {
+    let env = Env::default();
+    // NOTE: no mock_all_auths(); organizer.require_auth() must fail.
+    let admin = Address::generate(&env);
+    let (token_addr, _sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    escrow.initialize(&organizer, &referee, &token_addr, &1i128, &bps(&env));
+}
+

@@ -2,9 +2,10 @@
 extern crate std;
 
 use soroban_sdk::{
-    testutils::Address as _,
+    symbol_short,
+    testutils::{Address as _, Events},
     token::{StellarAssetClient, TokenClient},
-    Address, Env, Vec,
+    Address, Env, IntoVal, Symbol, Val, Vec,
 };
 
 use crate::{Escrow, EscrowClient};
@@ -468,5 +469,104 @@ fn cancel_requires_organizer_auth() {
     init_default(&env, &escrow, &token_addr, &organizer, &referee);
     env.set_auths(&[]); // clear mocked auths → organizer.require_auth() fails
     escrow.cancel_tournament();
+}
+
+#[test]
+fn join_emits_registered_event() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    let player = Address::generate(&env);
+    sac.mint(&player, &5_000_000i128);
+    escrow.join_tournament(&player);
+
+    let expected: Vec<(Address, Vec<Val>, Val)> = Vec::from_array(&env, [(
+        escrow.address.clone(),
+        Vec::from_array(
+            &env,
+            [
+                Symbol::new(&env, "registered").into_val(&env),
+                player.into_val(&env),
+            ],
+        ),
+        1_000_000i128.into_val(&env),
+    )]);
+    assert_eq!(
+        env.events().all().filter_by_contract(&escrow.address),
+        expected
+    );
+}
+
+#[test]
+fn finalize_emits_finalized_event() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    let p1 = join(&env, &escrow, &sac);
+    let p2 = join(&env, &escrow, &sac);
+    let p3 = join(&env, &escrow, &sac);
+    escrow.finalize_results(&p1, &p2, &p3);
+
+    let expected: Vec<(Address, Vec<Val>, Val)> = Vec::from_array(
+        &env,
+        [(
+            escrow.address.clone(),
+            Vec::from_array(
+                &env,
+                [
+                    symbol_short!("finalized").into_val(&env),
+                    p1.into_val(&env),
+                    p2.into_val(&env),
+                    p3.into_val(&env),
+                ],
+            ),
+            Vec::from_array(&env, [1_800_000i128, 900_000i128, 300_000i128]).into_val(&env),
+        )],
+    );
+    assert_eq!(
+        env.events().all().filter_by_contract(&escrow.address),
+        expected
+    );
+}
+
+#[test]
+fn cancel_emits_cancelled_event() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    let _p1 = join(&env, &escrow, &sac);
+    let _p2 = join(&env, &escrow, &sac);
+    escrow.cancel_tournament();
+
+    let expected: Vec<(Address, Vec<Val>, Val)> = Vec::from_array(
+        &env,
+        [(
+            escrow.address.clone(),
+            Vec::from_array(
+                &env,
+                [symbol_short!("cancelled").into_val(&env)],
+            ),
+            2u32.into_val(&env),
+        )],
+    );
+    assert_eq!(
+        env.events().all().filter_by_contract(&escrow.address),
+        expected
+    );
 }
 

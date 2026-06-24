@@ -288,6 +288,7 @@ export async function getTournamentDetail(id: string) {
     contractId: t.contractId,
     contractUrl: t.contractId ? explorerContractUrl(t.contractId) : null,
     tokenAddr: t.tokenAddr,
+    organizerId: t.organizerId,
     organizerAddr: t.organizerAddr,
     refereeAddr: t.refereeAddr,
     pool,

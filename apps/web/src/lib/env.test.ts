@@ -30,6 +30,7 @@ describe("parseEnv", () => {
   });
 
   it("throws and names the missing key when SESSION_SECRET is absent", () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { SESSION_SECRET: _omit, ...rest } = valid;
     expect(() => parseEnv(rest)).toThrowError(/SESSION_SECRET/);
   });

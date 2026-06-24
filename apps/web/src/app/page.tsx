@@ -1,22 +1,22 @@
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
-export default function Home() {
+export default function Page() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-[var(--spacing-container-max)] flex-col items-center justify-center gap-8 p-10">
-      <span className="font-mono text-xs font-bold uppercase tracking-[0.1em] text-acid-yellow">
-        Good Game Guild
-      </span>
-      <h1 className="font-display text-5xl font-extrabold tracking-tight text-primary">GGG</h1>
-      <div className="high-contrast-card acid-glow rounded-none p-8 text-center">
-        <p className="font-mono text-sm text-acid-yellow-bright">PRIZE POOL</p>
-        <p className="font-display text-6xl font-extrabold text-acid-yellow">0 XLM</p>
-      </div>
-      <div className="violet-accent glass-panel rounded-xl p-6">
-        <p className="text-on-surface-variant">
-          Trustless tournament prize-escrow on Stellar Soroban.
-        </p>
-      </div>
-      <Button className="font-mono uppercase tracking-[0.1em]">Connect Wallet</Button>
+    <main className="mx-auto max-w-(--spacing-container-max) px-4 py-24 md:px-(--spacing-margin-desktop)">
+      <p className="label-caps text-acid-yellow">Trustless · On-chain · Live</p>
+      <h1 className="mt-4 max-w-3xl text-[48px] font-extrabold leading-[1.1] -tracking-[0.04em] text-on-surface">
+        Prize pools the contract holds — not a custodian.
+      </h1>
+      <p className="mt-6 max-w-2xl text-lg text-on-surface-variant">
+        Create an on-chain escrow for any game. Players join by paying a crypto entry fee, a referee
+        submits the final ranking, and a Soroban contract settles the split automatically.
+      </p>
+      <Link
+        href="/tournaments/new"
+        className="brutalist-border label-caps mt-10 inline-block bg-electric-violet-strong px-8 py-4 italic text-background transition-transform hover:-translate-y-0.5 active:translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-acid-yellow"
+      >
+        Create Tournament
+      </Link>
     </main>
   );
 }

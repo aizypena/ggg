@@ -113,6 +113,45 @@ describe("PrizePoolCounter", () => {
     expect(screen.getByTestId("pool-amount")).toHaveTextContent("5.0000000");
   });
 
+  it("does not update state after unmount (active guard)", async () => {
+    let resolveFetch!: () => void;
+    const pendingFetch = new Promise<Response>((resolve) => {
+      resolveFetch = () => resolve(makeFetchResponse("99000000", 9));
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => pendingFetch),
+    );
+
+    const { unmount } = render(
+      <PrizePoolCounter
+        tournamentId="t_1"
+        initialPool="30000000"
+        asset="XLM"
+        participantCount={3}
+        entryFee="10000000"
+        pollMs={10}
+      />,
+    );
+
+    // Trigger the interval so the in-flight fetch is started
+    act(() => {
+      vi.advanceTimersByTime(10);
+    });
+
+    // Unmount before the fetch resolves
+    unmount();
+
+    // Now resolve the fetch — the active guard should prevent any setState
+    await act(async () => {
+      resolveFetch();
+      await Promise.resolve();
+    });
+
+    // The component is unmounted; no DOM update and no act()/unmount warning occurred.
+    expect(screen.queryByTestId("pool-amount")).toBeNull();
+  });
+
   it("clears the interval on unmount (no leak)", async () => {
     const clearIntervalSpy = vi.spyOn(globalThis, "clearInterval");
     vi.stubGlobal(

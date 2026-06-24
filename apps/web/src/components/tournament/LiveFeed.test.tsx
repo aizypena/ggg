@@ -86,6 +86,41 @@ describe("LiveFeed", () => {
     expect(screen.getByText(/GBBBBB… joined/)).toBeInTheDocument();
   });
 
+  it("does not update state after unmount (active guard)", async () => {
+    let resolveFetch!: () => void;
+    const pendingFetch = new Promise<Response>((resolve) => {
+      resolveFetch = () =>
+        resolve(
+          makeFetchResponse([
+            { playerAddr: "GZZZZZZZZZZZZZZZZZZZ", joinedAt: new Date().toISOString() },
+          ]),
+        );
+    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => pendingFetch),
+    );
+
+    const { unmount } = render(<LiveFeed tournamentId="t_1" pollMs={10} />);
+
+    // Trigger the interval so the in-flight fetch is started
+    act(() => {
+      vi.advanceTimersByTime(10);
+    });
+
+    // Unmount before the fetch resolves
+    unmount();
+
+    // Now resolve the fetch — the active guard should prevent any setState
+    await act(async () => {
+      resolveFetch();
+      await Promise.resolve();
+    });
+
+    // The component is unmounted; no DOM update and no act()/unmount warning occurred.
+    expect(screen.queryByRole("log")).toBeNull();
+  });
+
   it("clears the interval on unmount (no leak)", () => {
     const clearIntervalSpy = vi.spyOn(globalThis, "clearInterval");
     vi.stubGlobal(

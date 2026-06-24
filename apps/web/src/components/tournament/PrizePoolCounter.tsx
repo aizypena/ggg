@@ -47,10 +47,11 @@ export function PrizePoolCounter({
   // To migrate: remove the useEffect below, subscribe to SSE events instead,
   // and call setPool / setCount from the event handler.
   useEffect(() => {
+    let active = true;
     const id = setInterval(async () => {
       try {
         const data = await fetchTournamentDetail(tournamentId);
-        if (data) {
+        if (data && active) {
           setPool(data.pool);
           setCount(data.participantCount);
         }
@@ -58,7 +59,10 @@ export function PrizePoolCounter({
         // Keep showing the last good value on network failure.
       }
     }, pollMs);
-    return () => clearInterval(id);
+    return () => {
+      active = false;
+      clearInterval(id);
+    };
   }, [tournamentId, pollMs]);
 
   return (

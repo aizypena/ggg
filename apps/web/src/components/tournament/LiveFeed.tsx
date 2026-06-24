@@ -30,15 +30,19 @@ export function LiveFeed({
 
   // POLLING PLACEHOLDER — Phase 5 replaces setInterval with SSE subscription.
   useEffect(() => {
+    let active = true;
     const id = setInterval(async () => {
       try {
         const data = await fetchActivity(tournamentId);
-        if (data) setEntries(data);
+        if (data && active) setEntries(data);
       } catch {
         // Keep showing the last good value on network failure.
       }
     }, pollMs);
-    return () => clearInterval(id);
+    return () => {
+      active = false;
+      clearInterval(id);
+    };
   }, [tournamentId, pollMs]);
 
   return (

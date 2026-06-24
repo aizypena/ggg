@@ -17,3 +17,18 @@ Stood up the GGG pnpm 10 monorepo skeleton with zero business logic, so every la
 - Tailwind v4 `@theme` with the complete BRAND §2 token table, signature classes, keyframes, Sora + Space Mono + Material Symbols; dark-only.
 - shadcn/ui initialized and themed to GGG tokens (Button primitive).
 - Base CI (install + prisma generate + typecheck + lint + format check); README quickstart.
+
+## Phase 1 — Soroban Escrow Contract
+
+Implemented the trustless tournament prize-escrow contract (`contracts/escrow`) and published it to Stellar Testnet:
+
+- Crate scaffold, storage model (`DataKey`), and contract error enum (`Error`).
+- `initialize` (organizer-only) with validation of distribution bps, entry fee, and organizer≠referee.
+- `join_tournament` (player-auth) pulls entry fee, dedupes players, emits `registered` event.
+- `finalize_results` (referee-only) pays 60/30/10 with deterministic dust to 1st place; emits `finalized` event.
+- `cancel_tournament` (organizer-only) refunds all players; emits `cancelled` event.
+- Read-only `get_pool`, `get_reward`, `is_finished`.
+- Exhaustive `#[cfg(test)]` suite (28 tests) covering happy paths and all reverts.
+- Built, optimized, and uploaded WASM to Testnet; recorded `ESCROW_WASM_HASH` in `apps/web/.env.example`.
+- Generated TypeScript bindings under `apps/web/src/contract-client` for Phase 2/4 consumption.
+

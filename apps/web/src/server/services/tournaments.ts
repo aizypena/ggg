@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import {
+  buildCancelTx,
   buildDeployInitializeTx,
   buildFinalizeTx,
   buildJoinTx,
@@ -234,6 +235,31 @@ export async function buildFinalize(
     first: input.first,
     second: input.second,
     third: input.third,
+  });
+  return { unsignedXdr: xdr, network };
+}
+
+export async function buildCancel(
+  id: string,
+  userId: string,
+): Promise<{ unsignedXdr: string; network: string }> {
+  const t = await prisma.tournament.findUnique({ where: { id } });
+  if (!t) {
+    throw Object.assign(new Error("Tournament not found"), { status: 404 });
+  }
+  if (t.organizerId !== userId) {
+    throw Object.assign(new Error("Only the organiser can cancel this tournament"), {
+      status: 403,
+    });
+  }
+  if (t.status !== "ACTIVE" || !t.contractId) {
+    throw Object.assign(new Error("Only an active, deployed tournament can be cancelled"), {
+      status: 409,
+    });
+  }
+  const { xdr, network } = await buildCancelTx({
+    contractId: t.contractId,
+    organizerAddress: t.organizerAddr,
   });
   return { unsignedXdr: xdr, network };
 }

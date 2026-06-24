@@ -65,7 +65,8 @@ export async function POST(req: NextRequest, ctx: Ctx): Promise<Response> {
     return ok(data);
   } catch (e) {
     if (e instanceof StellarError) {
-      return err("STELLAR_ERROR", e.message, 422);
+      const stellarStatus = e.code === "TX_TIMEOUT" ? 504 : e.code === "SUBMIT_FAILED" ? 502 : 422; // SIMULATION_FAILED | INVALID_INPUT | others
+      return err("STELLAR_ERROR", e.message, stellarStatus);
     }
     if (e instanceof Error && "status" in e) {
       const status = (e as Error & { status: number }).status;

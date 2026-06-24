@@ -178,6 +178,32 @@ describe("POST /api/tournaments/[id]/submit", () => {
   });
 
   // ---------------------------------------------------------------------------
+  // Fix 2: confirmed-state dedupe — already ACTIVE deploy must NOT re-submit
+  // ---------------------------------------------------------------------------
+
+  it("returns existing contractId WITHOUT calling submitSignedXdr when tournament is already ACTIVE", async () => {
+    // Simulate an already-deployed (ACTIVE) tournament.
+    findUniqueMock.mockResolvedValueOnce({
+      id: "t_1",
+      organizerId: "user_1",
+      status: "ACTIVE",
+      contractId: "C_EXISTING",
+      deployTxHash: "TX_EXISTING",
+    });
+
+    const res = await POST(makeReq("k_active") as Parameters<typeof POST>[0], ctx);
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.ok).toBe(true);
+    expect(json.data.contractId).toBe("C_EXISTING");
+    expect(json.data.txHash).toBe("TX_EXISTING");
+    expect(json.data.status).toBe("ACTIVE");
+    // The key assertion: on-chain submission must NOT happen.
+    expect(submitMock).not.toHaveBeenCalled();
+  });
+
+  // ---------------------------------------------------------------------------
   // Failed on-chain transaction must NOT persist success state
   // ---------------------------------------------------------------------------
 
@@ -361,5 +387,45 @@ describe("POST /api/tournaments/[id]/submit", () => {
     const updateData = updateMock.mock.calls[0]![0].data;
     expect(updateData.status).toBe("FINISHED");
     expect(updateData.finalizedAt).toBeInstanceOf(Date);
+  });
+
+  // ---------------------------------------------------------------------------
+  // Fix 4: StellarError status mapping by code
+  // ---------------------------------------------------------------------------
+
+  it("maps StellarError TX_TIMEOUT to 504", async () => {
+    const { StellarError } = await import("@/lib/stellar");
+    submitMock.mockRejectedValueOnce(new StellarError("TX_TIMEOUT", "timed out"));
+
+    const res = await POST(makeReq("k13") as Parameters<typeof POST>[0], ctx);
+    const json = await res.json();
+
+    expect(res.status).toBe(504);
+    expect(json.ok).toBe(false);
+    expect(json.error.code).toBe("STELLAR_ERROR");
+  });
+
+  it("maps StellarError SUBMIT_FAILED to 502", async () => {
+    const { StellarError } = await import("@/lib/stellar");
+    submitMock.mockRejectedValueOnce(new StellarError("SUBMIT_FAILED", "submit failed"));
+
+    const res = await POST(makeReq("k14") as Parameters<typeof POST>[0], ctx);
+    const json = await res.json();
+
+    expect(res.status).toBe(502);
+    expect(json.ok).toBe(false);
+    expect(json.error.code).toBe("STELLAR_ERROR");
+  });
+
+  it("maps StellarError SIMULATION_FAILED to 422", async () => {
+    const { StellarError } = await import("@/lib/stellar");
+    submitMock.mockRejectedValueOnce(new StellarError("SIMULATION_FAILED", "simulation failed"));
+
+    const res = await POST(makeReq("k15") as Parameters<typeof POST>[0], ctx);
+    const json = await res.json();
+
+    expect(res.status).toBe(422);
+    expect(json.ok).toBe(false);
+    expect(json.error.code).toBe("STELLAR_ERROR");
   });
 });

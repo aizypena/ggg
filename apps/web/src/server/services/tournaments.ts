@@ -1,6 +1,11 @@
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
-import { buildDeployInitializeTx, resolveSacAddress, submitSignedXdr } from "@/lib/stellar";
+import {
+  buildDeployInitializeTx,
+  explorerTxUrl,
+  resolveSacAddress,
+  submitSignedXdr,
+} from "@/lib/stellar";
 import type { CreateTournamentInput, SubmitInput } from "@/lib/validation/tournament";
 
 export async function createTournament(
@@ -60,8 +65,6 @@ export async function submitTournamentTx(
   input: SubmitInput,
   userId: string,
 ): Promise<SubmitTxResult> {
-  const { explorerTxUrl } = await import("@/lib/stellar");
-
   const tournament = await prisma.tournament.findUnique({ where: { id } });
   if (!tournament) {
     throw Object.assign(new Error("Tournament not found"), { status: 404 });
@@ -73,6 +76,19 @@ export async function submitTournamentTx(
     tournament.organizerId !== userId
   ) {
     throw Object.assign(new Error("Forbidden"), { status: 403 });
+  }
+
+  // Guard against re-submitting an already-confirmed deploy (spec §5: dedupe on
+  // confirmed state). contractId has a @unique constraint in the Prisma schema,
+  // so a second Prisma update with the same value would also throw a unique
+  // violation — but we short-circuit before hitting Stellar at all.
+  if (input.intent === "deploy" && tournament.status === "ACTIVE" && tournament.contractId) {
+    return {
+      txHash: tournament.deployTxHash ?? "",
+      contractId: tournament.contractId,
+      status: tournament.status,
+      explorerUrl: explorerTxUrl(tournament.deployTxHash ?? ""),
+    };
   }
 
   const result = await submitSignedXdr(input.signedXdr, input.intent);

@@ -177,3 +177,130 @@ fn join_rejects_double_join() {
     escrow.join_tournament(&player); // second time → panic
 }
 
+fn join<'a>(env: &Env, escrow: &EscrowClient<'a>, sac: &StellarAssetClient<'a>) -> Address {
+    let p = Address::generate(env);
+    sac.mint(&p, &10_000_000i128);
+    escrow.join_tournament(&p);
+    p
+}
+
+#[test]
+fn finalize_pays_60_30_10() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee); // entry_fee 1_000_000
+
+    let p1 = join(&env, &escrow, &sac);
+    let p2 = join(&env, &escrow, &sac);
+    let p3 = join(&env, &escrow, &sac);
+    // pool = 3_000_000
+
+    escrow.finalize_results(&p1, &p2, &p3);
+
+    assert_eq!(escrow.is_finished(), true);
+    // 60/30/10 of 3_000_000 = 1_800_000 / 900_000 / 300_000
+    assert_eq!(token.balance(&p1), 10_000_000 - 1_000_000 + 1_800_000); // 10_800_000
+    assert_eq!(token.balance(&p2), 10_000_000 - 1_000_000 + 900_000);   // 9_900_000
+    assert_eq!(token.balance(&p3), 10_000_000 - 1_000_000 + 300_000);   // 9_300_000
+    assert_eq!(token.balance(&escrow.address), 0i128); // pool fully distributed
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #10)")] // WinnersNotDistinct
+fn finalize_rejects_duplicate_winner() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    let p1 = join(&env, &escrow, &sac);
+    let p2 = join(&env, &escrow, &sac);
+    let _p3 = join(&env, &escrow, &sac);
+    escrow.finalize_results(&p1, &p1, &p2); // dup p1
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #11)")] // WinnerNotRegistered
+fn finalize_rejects_unregistered_winner() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    let p1 = join(&env, &escrow, &sac);
+    let p2 = join(&env, &escrow, &sac);
+    let stranger = Address::generate(&env); // never joined
+    escrow.finalize_results(&p1, &p2, &stranger);
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #7)")] // AlreadyFinished
+fn finalize_rejects_double_finalize() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    let p1 = join(&env, &escrow, &sac);
+    let p2 = join(&env, &escrow, &sac);
+    let p3 = join(&env, &escrow, &sac);
+    escrow.finalize_results(&p1, &p2, &p3);
+    escrow.finalize_results(&p1, &p2, &p3); // second → panic
+}
+
+#[test]
+#[should_panic] // unauthorized: only referee may finalize
+fn finalize_requires_referee_auth() {
+    let env = Env::default();
+    // Mint requires SAC admin auth + joins require player auth, so mock for
+    // setup, then assert the referee-only guard via mock_auths with a
+    // non-referee invoker.
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    let p1 = join(&env, &escrow, &sac);
+    let p2 = join(&env, &escrow, &sac);
+    let p3 = join(&env, &escrow, &sac);
+    // Now restrict auths so referee's require_auth is NOT satisfied.
+    env.set_auths(&[]); // clear all mocked auths
+    escrow.finalize_results(&p1, &p2, &p3); // referee.require_auth() fails
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #7)")] // AlreadyFinished
+fn join_rejects_after_finish() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    let p1 = join(&env, &escrow, &sac);
+    let p2 = join(&env, &escrow, &sac);
+    let p3 = join(&env, &escrow, &sac);
+    escrow.finalize_results(&p1, &p2, &p3);
+    let late = Address::generate(&env);
+    sac.mint(&late, &5_000_000i128);
+    escrow.join_tournament(&late); // finished → panic #7
+}
+

@@ -139,6 +139,76 @@ impl Escrow {
             pool_after,
         );
     }
+
+    pub fn finalize_results(env: Env, first: Address, second: Address, third: Address) {
+        let storage = env.storage().instance();
+        if !storage.has(&DataKey::Organizer) {
+            panic_with_error!(&env, Error::NotInitialized);
+        }
+        let referee: Address = storage.get(&DataKey::Referee).unwrap();
+        referee.require_auth();
+
+        let finished: bool = storage.get(&DataKey::Finished).unwrap_or(false);
+        let cancelled: bool = storage.get(&DataKey::Cancelled).unwrap_or(false);
+        if finished {
+            panic_with_error!(&env, Error::AlreadyFinished);
+        }
+        if cancelled {
+            panic_with_error!(&env, Error::AlreadyCancelled);
+        }
+
+        // Distinct.
+        if first == second || first == third || second == third {
+            panic_with_error!(&env, Error::WinnersNotDistinct);
+        }
+
+        // Registered.
+        let players: Vec<Address> = storage.get(&DataKey::Players).unwrap();
+        if !players.contains(&first) || !players.contains(&second) || !players.contains(&third) {
+            panic_with_error!(&env, Error::WinnerNotRegistered);
+        }
+
+        let entry_fee: i128 = storage.get(&DataKey::EntryFee).unwrap();
+        let pool: i128 = (players.len() as i128)
+            .checked_mul(entry_fee)
+            .expect("pool overflow");
+        let dist: Vec<u32> = storage.get(&DataKey::DistributionBps).unwrap();
+
+        // prize[i] = pool * bps[i] / 10000, checked.
+        let mut amounts: Vec<i128> = Vec::new(&env);
+        let mut distributed: i128 = 0;
+        for b in dist.iter() {
+            let amt = pool
+                .checked_mul(b as i128)
+                .expect("prize mul overflow")
+                .checked_div(10_000)
+                .expect("prize div");
+            amounts.push_back(amt);
+            distributed = distributed.checked_add(amt).expect("dist overflow");
+        }
+        // Deterministic dust → 1st place.
+        let dust = pool.checked_sub(distributed).expect("dust underflow");
+        let first_amt = amounts.get(0).unwrap().checked_add(dust).expect("dust add");
+        amounts.set(0, first_amt);
+
+        let token: Address = storage.get(&DataKey::Token).unwrap();
+        let client = token::TokenClient::new(&env, &token);
+        let contract = env.current_contract_address();
+        client.transfer(&contract, &first, &amounts.get(0).unwrap());
+        client.transfer(&contract, &second, &amounts.get(1).unwrap());
+        client.transfer(&contract, &third, &amounts.get(2).unwrap());
+
+        storage.set(&DataKey::Finished, &true);
+        storage.set(
+            &DataKey::Winners,
+            &(first.clone(), second.clone(), third.clone()),
+        );
+
+        env.events().publish(
+            (symbol_short!("finalized"), first, second, third),
+            amounts,
+        );
+    }
 }
 
 #[cfg(test)]

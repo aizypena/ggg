@@ -349,3 +349,21 @@ fn get_reward_returns_placement_amounts() {
     assert_eq!(escrow.get_reward(&stranger), 0i128);
 }
 
+#[test]
+fn is_finished_flips_after_finalize() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    let p1 = join(&env, &escrow, &sac);
+    let p2 = join(&env, &escrow, &sac);
+    let p3 = join(&env, &escrow, &sac);
+    assert_eq!(escrow.is_finished(), false);
+    escrow.finalize_results(&p1, &p2, &p3);
+    assert_eq!(escrow.is_finished(), true);
+}
+

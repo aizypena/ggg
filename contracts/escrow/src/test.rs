@@ -304,3 +304,20 @@ fn join_rejects_after_finish() {
     escrow.join_tournament(&late); // finished → panic #7
 }
 
+#[test]
+fn get_pool_tracks_joins() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee); // fee 1_000_000
+    assert_eq!(escrow.get_pool(), 0i128);
+    let _a = join(&env, &escrow, &sac);
+    assert_eq!(escrow.get_pool(), 1_000_000i128);
+    let _b = join(&env, &escrow, &sac);
+    assert_eq!(escrow.get_pool(), 2_000_000i128);
+}
+

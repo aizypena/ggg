@@ -28,6 +28,7 @@ apps/web/src/generated/
 .DS_Store
 *.log
 coverage/
+.claude/
 
 # local-only docker override (shared-sandbox port remap)
 docker-compose.override.yml

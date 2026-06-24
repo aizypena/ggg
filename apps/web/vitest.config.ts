@@ -3,8 +3,9 @@ import { fileURLToPath } from "url";
 
 export default defineConfig({
   test: {
-    environment: "node",
-    include: ["src/**/*.test.ts", "prisma/**/*.test.ts"],
+    environment: "jsdom",
+    include: ["src/**/*.test.{ts,tsx}", "prisma/**/*.test.ts"],
+    exclude: ["**/*.integration.test.ts", "node_modules/**"],
   },
   resolve: {
     alias: {

@@ -253,6 +253,41 @@ impl Escrow {
             amounts,
         );
     }
+
+    pub fn cancel_tournament(env: Env) {
+        let storage = env.storage().instance();
+        if !storage.has(&DataKey::Organizer) {
+            panic_with_error!(&env, Error::NotInitialized);
+        }
+        let organizer: Address = storage.get(&DataKey::Organizer).unwrap();
+        organizer.require_auth();
+
+        let finished: bool = storage.get(&DataKey::Finished).unwrap_or(false);
+        let cancelled: bool = storage.get(&DataKey::Cancelled).unwrap_or(false);
+        if finished {
+            panic_with_error!(&env, Error::AlreadyFinished);
+        }
+        if cancelled {
+            panic_with_error!(&env, Error::AlreadyCancelled);
+        }
+
+        let players: Vec<Address> = storage.get(&DataKey::Players).unwrap();
+        let entry_fee: i128 = storage.get(&DataKey::EntryFee).unwrap();
+        let token: Address = storage.get(&DataKey::Token).unwrap();
+        let client = token::TokenClient::new(&env, &token);
+        let contract = env.current_contract_address();
+
+        for p in players.iter() {
+            client.transfer(&contract, &p, &entry_fee);
+        }
+
+        storage.set(&DataKey::Cancelled, &true);
+
+        env.events().publish(
+            (symbol_short!("cancelled"),),
+            players.len() as u32,
+        );
+    }
 }
 
 #[cfg(test)]

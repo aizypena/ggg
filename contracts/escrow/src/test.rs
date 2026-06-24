@@ -367,3 +367,106 @@ fn is_finished_flips_after_finalize() {
     assert_eq!(escrow.is_finished(), true);
 }
 
+#[test]
+fn cancel_refunds_all_players() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    let p1 = join(&env, &escrow, &sac); // each minted 10_000_000, paid 1_000_000
+    let p2 = join(&env, &escrow, &sac);
+    assert_eq!(token.balance(&escrow.address), 2_000_000i128);
+
+    escrow.cancel_tournament();
+
+    assert_eq!(token.balance(&p1), 10_000_000i128); // fully refunded
+    assert_eq!(token.balance(&p2), 10_000_000i128);
+    assert_eq!(token.balance(&escrow.address), 0i128);
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #8)")] // AlreadyCancelled
+fn join_rejects_after_cancel() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, _sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    escrow.cancel_tournament();
+    let player = Address::generate(&env);
+    escrow.join_tournament(&player); // cancelled → panic
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #7)")] // AlreadyFinished → no cancel after finalize
+fn cancel_rejects_after_finalize() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    let p1 = join(&env, &escrow, &sac);
+    let p2 = join(&env, &escrow, &sac);
+    let p3 = join(&env, &escrow, &sac);
+    escrow.finalize_results(&p1, &p2, &p3);
+    escrow.cancel_tournament(); // finished → panic #7
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #8)")] // AlreadyCancelled
+fn cancel_rejects_double_cancel() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, _sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    escrow.cancel_tournament();
+    escrow.cancel_tournament(); // second → panic #8
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #8)")] // AlreadyCancelled → no finalize after cancel
+fn finalize_rejects_after_cancel() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    let p1 = join(&env, &escrow, &sac);
+    let p2 = join(&env, &escrow, &sac);
+    let p3 = join(&env, &escrow, &sac);
+    escrow.cancel_tournament();
+    escrow.finalize_results(&p1, &p2, &p3); // cancelled → panic #8
+}
+
+#[test]
+#[should_panic] // unauthorized: only organizer may cancel
+fn cancel_requires_organizer_auth() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, _sac, _token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    init_default(&env, &escrow, &token_addr, &organizer, &referee);
+    env.set_auths(&[]); // clear mocked auths → organizer.require_auth() fails
+    escrow.cancel_tournament();
+}
+

@@ -391,4 +391,135 @@ describe("CreateTournamentForm", () => {
 
     vi.unstubAllGlobals();
   });
+
+  // ---------- entry-fee validation tests ----------
+
+  it.each([
+    [".", "entry fee must be a positive number"],
+    ["abc", "entry fee must be a positive number"],
+    ["-1.5", "entry fee must be a positive number"],
+    ["", "entry fee is required"],
+  ])(
+    "invalid entry fee %j → shows field error, makes NO fetch call, phase stays idle",
+    async (feeValue, expectedErrorPattern) => {
+      const mockFetch = vi.fn();
+      vi.stubGlobal("fetch", mockFetch);
+
+      render(<CreateTournamentForm expectedPassphrase="P" />);
+      fireEvent.change(screen.getByLabelText(/tournament name/i), {
+        target: { value: "Cup" },
+      });
+      fireEvent.change(screen.getByLabelText(/game title/i), { target: { value: "SF6" } });
+      fireEvent.change(screen.getByLabelText(/entry fee/i), { target: { value: feeValue } });
+      fireEvent.change(screen.getByLabelText(/referee/i), { target: { value: REF } });
+
+      // Connect wallet so the submit button is enabled
+      fireEvent.click(screen.getByRole("button", { name: /connect wallet/i }));
+      await waitFor(() => expect(ensureWallet).toHaveBeenCalled());
+
+      fireEvent.click(screen.getByRole("button", { name: /deploy soroban contract/i }));
+
+      // Field-level error should appear
+      await waitFor(() =>
+        expect(screen.getByRole("alert")).toHaveTextContent(new RegExp(expectedErrorPattern, "i")),
+      );
+
+      // No network call made, modal NOT opened
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+      vi.unstubAllGlobals();
+    },
+  );
+
+  it("entry fee with 8 decimals (1.12345678) → rejected, no network call", async () => {
+    const mockFetch = vi.fn();
+    vi.stubGlobal("fetch", mockFetch);
+
+    render(<CreateTournamentForm expectedPassphrase="P" />);
+    fireEvent.change(screen.getByLabelText(/tournament name/i), { target: { value: "Cup" } });
+    fireEvent.change(screen.getByLabelText(/game title/i), { target: { value: "SF6" } });
+    fireEvent.change(screen.getByLabelText(/entry fee/i), { target: { value: "1.12345678" } });
+    fireEvent.change(screen.getByLabelText(/referee/i), { target: { value: REF } });
+
+    fireEvent.click(screen.getByRole("button", { name: /connect wallet/i }));
+    await waitFor(() => expect(ensureWallet).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByRole("button", { name: /deploy soroban contract/i }));
+
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/at most 7 decimal places/i),
+    );
+    expect(mockFetch).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    vi.unstubAllGlobals();
+  });
+
+  it("valid entry fee 1.1234567 (exactly 7 decimals) → accepted and sent as correct stroops", async () => {
+    const mockFetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          ok: true,
+          data: { tournamentId: "t_7dec", unsignedXdr: "XDR", network: "testnet" },
+        }),
+        { status: 201, headers: { "content-type": "application/json" } },
+      ),
+    );
+    vi.stubGlobal("fetch", mockFetch);
+
+    render(<CreateTournamentForm expectedPassphrase="P" />);
+    fireEvent.change(screen.getByLabelText(/tournament name/i), { target: { value: "Cup" } });
+    fireEvent.change(screen.getByLabelText(/game title/i), { target: { value: "SF6" } });
+    // 1.1234567 XLM → 11234567 stroops
+    fireEvent.change(screen.getByLabelText(/entry fee/i), { target: { value: "1.1234567" } });
+    fireEvent.change(screen.getByLabelText(/referee/i), { target: { value: REF } });
+
+    fireEvent.click(screen.getByRole("button", { name: /connect wallet/i }));
+    await waitFor(() => expect(ensureWallet).toHaveBeenCalled());
+
+    fireEvent.click(screen.getByRole("button", { name: /deploy soroban contract/i }));
+
+    await waitFor(() => {
+      const call = mockFetch.mock.calls.find(
+        (args: unknown[]) => typeof args[0] === "string" && args[0] === "/api/tournaments",
+      );
+      expect(call).toBeDefined();
+      const body = JSON.parse((call![1] as RequestInit).body as string);
+      expect(body.entryFee).toBe("11234567");
+    });
+
+    vi.unstubAllGlobals();
+  });
+
+  it("cover PUT returning ok:false → surfaces error and does NOT set coverImageKey", async () => {
+    const mockFetch = vi
+      .fn()
+      // presign succeeds
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            ok: true,
+            data: { uploadUrl: "https://s3.example.com/presigned", key: "covers/img.png" },
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        ),
+      )
+      // PUT fails with 403
+      .mockResolvedValueOnce(new Response(null, { status: 403 }));
+    vi.stubGlobal("fetch", mockFetch);
+
+    render(<CreateTournamentForm expectedPassphrase="P" />);
+
+    const file = new File(["img bytes"], "cover.png", { type: "image/png" });
+    fireEvent.change(screen.getByLabelText(/cover image/i), { target: { files: [file] } });
+
+    // Error should appear; coverImageKey "Uploaded:" text should NOT appear
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/cover image upload failed/i),
+    );
+    expect(screen.queryByText(/Uploaded:/i)).not.toBeInTheDocument();
+
+    vi.unstubAllGlobals();
+  });
 });

@@ -10,12 +10,41 @@ import { createTournamentSchema } from "@/lib/validation/tournament";
 const STROOP_FACTOR = 10_000_000n;
 
 /**
+ * Regex: positive decimal with at most 7 fractional digits, no leading zeros
+ * (except "0.xxx"), must be > 0 (reject "0", "0.0", etc.).
+ * Valid examples: "1", "1.5", "0.0000001", "123.4567890" (exactly 7 dec.)
+ */
+const ENTRY_FEE_REGEX = /^\d+(\.\d{1,7})?$/;
+
+/**
+ * Validate an entry-fee string. Returns an error message or null if valid.
+ * Rejects: empty, non-numeric, negative, zero, >7 decimal places.
+ */
+function validateEntryFee(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return "Entry fee is required";
+  if (!ENTRY_FEE_REGEX.test(trimmed)) {
+    // Distinguish >7 decimals from other bad input for a clearer message
+    if (/^\d+\.\d{8,}$/.test(trimmed)) return "Entry fee must have at most 7 decimal places";
+    return "Entry fee must be a positive number (e.g. 1.5)";
+  }
+  // Reject zero values like "0", "0.0", "0.0000000"
+  const [whole = "0", frac = ""] = trimmed.split(".");
+  const fracPadded = (frac + "0000000").slice(0, 7);
+  if (BigInt(whole) === 0n && BigInt(fracPadded) === 0n) {
+    return "Entry fee must be greater than 0";
+  }
+  return null;
+}
+
+/**
  * Convert a human-readable XLM decimal string (e.g. "1.5") to its integer
  * stroop representation (e.g. "15000000") using only integer math — no floats.
+ * Caller MUST validate with validateEntryFee() first.
  */
 function xlmToStroops(xlm: string): string {
   const [whole = "0", frac = ""] = xlm.trim().split(".");
-  // Pad/truncate fractional part to exactly 7 digits
+  // Pad fractional part to exactly 7 digits (input is already validated to ≤7)
   const fracPadded = (frac + "0000000").slice(0, 7);
   return (BigInt(whole) * STROOP_FACTOR + BigInt(fracPadded)).toString();
 }
@@ -42,6 +71,7 @@ export function CreateTournamentForm({ expectedPassphrase }: CreateTournamentFor
   // UI state
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [entryFeeError, setEntryFeeError] = useState<string | null>(null);
 
   // Derived values
   const bps = splits.map((s) => s * 100) as [number, number, number];
@@ -62,11 +92,12 @@ export function CreateTournamentForm({ expectedPassphrase }: CreateTournamentFor
     };
     if (!presign.ok) throw new Error(presign.error ?? "Upload presign failed");
 
-    await fetch(presign.data!.uploadUrl, {
+    const putRes = await fetch(presign.data!.uploadUrl, {
       method: "PUT",
       headers: { "content-type": file.type },
       body: file,
     });
+    if (!putRes.ok) throw new Error(`Cover image upload failed (HTTP ${putRes.status})`);
 
     setCoverImageKey(presign.data!.key);
   }
@@ -74,25 +105,35 @@ export function CreateTournamentForm({ expectedPassphrase }: CreateTournamentFor
   async function handleDeploy() {
     setError(null);
 
-    const payload = {
-      name,
-      gameTitle,
-      entryFee: xlmToStroops(entryFee || "0"),
-      asset,
-      refereeAddress,
-      organizerAddress,
-      distributionBps: bps,
-      coverImageKey,
-    };
-
-    // Client-side validation
-    const parsed = createTournamentSchema.safeParse(payload);
-    if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Invalid form input");
+    // Validate entry fee BEFORE any conversion or network call
+    const feeError = validateEntryFee(entryFee);
+    if (feeError) {
+      setEntryFeeError(feeError);
       return;
     }
+    setEntryFeeError(null);
 
     try {
+      const entryFeeStroops = xlmToStroops(entryFee);
+
+      const payload = {
+        name,
+        gameTitle,
+        entryFee: entryFeeStroops,
+        asset,
+        refereeAddress,
+        organizerAddress,
+        distributionBps: bps,
+        coverImageKey,
+      };
+
+      // Client-side validation
+      const parsed = createTournamentSchema.safeParse(payload);
+      if (!parsed.success) {
+        setError(parsed.error.issues[0]?.message ?? "Invalid form input");
+        return;
+      }
+
       setPhase("submitting");
 
       const createRes = await fetch("/api/tournaments", {
@@ -184,7 +225,7 @@ export function CreateTournamentForm({ expectedPassphrase }: CreateTournamentFor
       <div className="mt-6 grid grid-cols-3 gap-4">
         <div className="col-span-2">
           <label className={labelClass} htmlFor="entryFee">
-            Entry Fee (XLM)
+            Entry Fee ({asset})
           </label>
           <input
             id="entryFee"
@@ -192,10 +233,18 @@ export function CreateTournamentForm({ expectedPassphrase }: CreateTournamentFor
             inputMode="decimal"
             className={monoFieldClass}
             value={entryFee}
-            onChange={(e) => setEntryFee(e.target.value)}
+            onChange={(e) => {
+              setEntryFee(e.target.value);
+              setEntryFeeError(null);
+            }}
             placeholder="0.0000000"
-            required
+            aria-describedby={entryFeeError ? "entry-fee-error" : undefined}
           />
+          {entryFeeError && (
+            <p id="entry-fee-error" role="alert" className="mt-1 text-sm text-error">
+              {entryFeeError}
+            </p>
+          )}
         </div>
         <div>
           <label className={labelClass} htmlFor="asset">

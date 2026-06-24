@@ -8,6 +8,10 @@ on:
 jobs:
   typecheck-lint:
     runs-on: ubuntu-latest
+    env:
+      # prisma.config.ts resolves env("DATABASE_URL") at load time; `prisma generate`
+      # never connects, so a placeholder is enough to satisfy the config in CI.
+      DATABASE_URL: postgresql://ggg:ggg@localhost:5432/ggg
     steps:
       - uses: actions/checkout@v4
 

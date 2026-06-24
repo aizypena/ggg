@@ -8,5 +8,7 @@ export async function GET(
   const { id } = await ctx.params;
   const data = await getTournamentDetail(id);
   if (!data) return err("NOT_FOUND", "Tournament not found", 404);
-  return ok(data);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { organizerId: _organizerId, ...publicData } = data;
+  return ok(publicData);
 }

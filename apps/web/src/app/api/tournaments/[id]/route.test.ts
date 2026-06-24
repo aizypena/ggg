@@ -71,6 +71,21 @@ describe("GET /api/tournaments/[id]", () => {
     expect(typeof json.data.winners[0].amount).toBe("string");
   });
 
+  it("does NOT expose organizerId in the public response", async () => {
+    const res = await GET(new Request("http://localhost/api/tournaments/t_1"), {
+      params: Promise.resolve({ id: "t_1" }),
+    });
+    const json = await res.json();
+
+    expect(json.ok).toBe(true);
+    expect(json.data).not.toHaveProperty("organizerId");
+    // Other expected public fields are still present
+    expect(json.data).toHaveProperty("id");
+    expect(json.data).toHaveProperty("name");
+    expect(json.data).toHaveProperty("pool");
+    expect(json.data).toHaveProperty("participants");
+  });
+
   it("404s unknown id", async () => {
     const { prisma } = await import("@/lib/db");
     (prisma.tournament.findUnique as ReturnType<typeof vi.fn>).mockResolvedValueOnce(null);

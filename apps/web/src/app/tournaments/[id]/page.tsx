@@ -116,16 +116,8 @@ export default async function TournamentDetailPage({
           )}
 
           {/* Participants — always shown */}
-          <section
-            aria-labelledby="participants-section-heading"
-            className="kinetic-glass rounded-2xl p-6"
-          >
-            <p id="participants-section-heading" className="label-caps text-on-surface-variant">
-              Participants ({t.participants.length})
-            </p>
-            <div className="mt-4">
-              <ParticipantList participants={t.participants} />
-            </div>
+          <section aria-label="Participants" className="kinetic-glass rounded-2xl p-6">
+            <ParticipantList participants={t.participants} />
           </section>
         </div>
 

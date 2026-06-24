@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  ORGANIZER
+}
+
+enum Asset {
+  XLM
+  USDC
+}
+
+enum TournamentStatus {
+  DRAFT
+  ACTIVE
+  FINISHED
+  CANCELLED
+}
+
+enum EventType {
+  REGISTERED
+  FINALIZED
+  CANCELLED
+}
+
+model User {
+  id           String       @id @default(cuid())
+  username     String       @unique
+  passwordHash String
+  role         Role         @default(ORGANIZER)
+  tournaments  Tournament[] @relation("organizer")
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Tournament {
+  id            String           @id @default(cuid())
+  name          String
+  gameTitle     String
+  asset         Asset            @default(XLM)
+  entryFee      BigInt
+  firstBps      Int
+  secondBps     Int
+  thirdBps      Int
+  organizer     User             @relation("organizer", fields: [organizerId], references: [id])
+  organizerId   String
+  organizerAddr String
+  refereeAddr   String
+  contractId    String?          @unique
+  tokenAddr     String?
+  status        TournamentStatus @default(DRAFT)
+  coverImageKey String?
+  participants  Participant[]
+  payouts       Payout[]
+  events        ContractEvent[]
+  deployTxHash  String?
+  createdAt     DateTime         @default(now())
+  finalizedAt   DateTime?
+  cancelledAt   DateTime?
+}
+
+model Participant {
+  id           String     @id @default(cuid())
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId String
+  playerAddr   String
+  joinTxHash   String?
+  joinedAt     DateTime   @default(now())
+
+  @@unique([tournamentId, playerAddr])
+}
+
+model Payout {
+  id           String     @id @default(cuid())
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId String
+  rank         Int
+  playerAddr   String
+  amount       BigInt
+  txHash       String?
+  createdAt    DateTime   @default(now())
+}
+
+model ContractEvent {
+  id           String     @id @default(cuid())
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId String
+  type         EventType
+  ledger       Int?
+  txHash       String?
+  payload      Json
+  createdAt    DateTime   @default(now())
+
+  @@index([tournamentId, createdAt])
+}

@@ -1,0 +1,11 @@
+[package]
+name = "ggg-escrow"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# soroban-sdk and the full contract implementation arrive in Phase 1.
+[dependencies]

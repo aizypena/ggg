@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  typecheck-lint:
+    runs-on: ubuntu-latest
+    env:
+      # prisma.config.ts resolves env("DATABASE_URL") at load time; `prisma generate`
+      # never connects, so a placeholder is enough to satisfy the config in CI.
+      DATABASE_URL: postgresql://ggg:ggg@localhost:5432/ggg
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter web db:generate
+
+      - name: Typecheck
+        run: pnpm -r typecheck
+
+      - name: Lint
+        run: pnpm -r lint
+
+      - name: Prettier check
+        run: pnpm format:check

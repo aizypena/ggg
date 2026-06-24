@@ -1,0 +1,13 @@
+node_modules
+.next
+dist
+build
+coverage
+pnpm-lock.yaml
+target
+apps/web/prisma/migrations
+apps/web/src/generated
+
+# Authoritative project docs/specs — content is canonical, not Prettier-managed
+*.md
+docs/

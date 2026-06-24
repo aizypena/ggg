@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# next
+.next/
+out/
+next-env.d.ts
+
+# env
+.env
+.env.local
+.env.*.local
+
+# build / artifacts
+dist/
+build/
+*.tsbuildinfo
+
+# rust
+target/
+
+# prisma
+apps/web/src/generated/
+
+# os / editor
+.DS_Store
+*.log
+coverage/
+
+# local-only docker override (shared-sandbox port remap)
+docker-compose.override.yml

@@ -2,11 +2,16 @@ import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import {
   buildDeployInitializeTx,
+  explorerContractUrl,
   explorerTxUrl,
   resolveSacAddress,
   submitSignedXdr,
 } from "@/lib/stellar";
-import type { CreateTournamentInput, SubmitInput } from "@/lib/validation/tournament";
+import type {
+  CreateTournamentInput,
+  ListQueryInput,
+  SubmitInput,
+} from "@/lib/validation/tournament";
 
 export async function createTournament(
   input: CreateTournamentInput,
@@ -145,5 +150,75 @@ export async function submitTournamentTx(
     txHash: result.hash,
     status: tournament.status,
     explorerUrl: explorerTxUrl(result.hash),
+  };
+}
+
+export async function listTournaments(userId: string, q: ListQueryInput) {
+  const rows = await prisma.tournament.findMany({
+    where: {
+      organizerId: userId,
+      ...(q.status ? { status: q.status } : {}),
+    },
+    include: { _count: { select: { participants: true } } },
+    orderBy: { createdAt: "desc" },
+    take: q.take + 1,
+    ...(q.cursor ? { cursor: { id: q.cursor }, skip: 1 } : {}),
+  });
+
+  const items = rows.slice(0, q.take).map((t) => ({
+    id: t.id,
+    name: t.name,
+    gameTitle: t.gameTitle,
+    status: t.status,
+    asset: t.asset,
+    entryFee: t.entryFee.toString(),
+    pool: (t.entryFee * BigInt(t._count.participants)).toString(),
+    participantCount: t._count.participants,
+  }));
+
+  const nextCursor = rows.length > q.take ? (rows[q.take]?.id ?? null) : null;
+
+  return { items, nextCursor };
+}
+
+export async function getTournamentDetail(id: string) {
+  const t = await prisma.tournament.findUnique({
+    where: { id },
+    include: {
+      participants: { orderBy: { joinedAt: "asc" } },
+      payouts: { orderBy: { rank: "asc" } },
+    },
+  });
+
+  if (!t) return null;
+
+  const pool = (t.entryFee * BigInt(t.participants.length)).toString();
+
+  return {
+    id: t.id,
+    name: t.name,
+    gameTitle: t.gameTitle,
+    status: t.status,
+    asset: t.asset,
+    entryFee: t.entryFee.toString(),
+    distributionBps: [t.firstBps, t.secondBps, t.thirdBps] as const,
+    contractId: t.contractId,
+    contractUrl: t.contractId ? explorerContractUrl(t.contractId) : null,
+    tokenAddr: t.tokenAddr,
+    organizerAddr: t.organizerAddr,
+    refereeAddr: t.refereeAddr,
+    pool,
+    participants: t.participants.map((p) => ({
+      playerAddr: p.playerAddr,
+      joinedAt: p.joinedAt.toISOString(),
+      joinTxHash: p.joinTxHash,
+    })),
+    winners: t.payouts.map((p) => ({
+      rank: p.rank,
+      playerAddr: p.playerAddr,
+      amount: p.amount.toString(),
+      txHash: p.txHash,
+      explorerUrl: p.txHash ? explorerTxUrl(p.txHash) : null,
+    })),
   };
 }

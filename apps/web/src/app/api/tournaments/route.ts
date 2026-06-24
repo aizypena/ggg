@@ -4,8 +4,30 @@ import { requireUser, AuthError } from "@/lib/auth-guards";
 import { assertSameOrigin, CsrfError } from "@/lib/csrf";
 import { rateLimit } from "@/lib/rate-limit";
 import { StellarError } from "@/lib/stellar";
-import { createTournamentSchema } from "@/lib/validation/tournament";
-import { createTournament } from "@/server/services/tournaments";
+import { createTournamentSchema, listQuerySchema } from "@/lib/validation/tournament";
+import { createTournament, listTournaments } from "@/server/services/tournaments";
+
+export async function GET(req: NextRequest): Promise<Response> {
+  // Auth: owner-scoped — must be an authenticated ORGANIZER.
+  let user: { id: string; username: string; role: string };
+  try {
+    user = await requireUser("ORGANIZER");
+  } catch (e) {
+    if (e instanceof AuthError) {
+      const code = e.status === 403 ? "FORBIDDEN" : "UNAUTHORIZED";
+      return err(code, e.message, e.status);
+    }
+    throw e; // re-throw NEXT_REDIRECT and any other non-auth errors
+  }
+
+  // Parse + validate query params.
+  const q = listQuerySchema.safeParse(Object.fromEntries(new URL(req.url).searchParams));
+  if (!q.success) {
+    return err("INVALID_REQUEST", q.error.issues[0]?.message ?? "Invalid query", 400);
+  }
+
+  return ok(await listTournaments(user.id, q.data));
+}
 
 export async function POST(req: NextRequest): Promise<Response> {
   // 1. CSRF: same-origin only.

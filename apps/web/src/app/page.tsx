@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+
 export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-[var(--spacing-container-max)] flex-col items-center justify-center gap-8 p-10">
@@ -14,6 +16,7 @@ export default function Home() {
           Trustless tournament prize-escrow on Stellar Soroban.
         </p>
       </div>
+      <Button className="font-mono uppercase tracking-[0.1em]">Connect Wallet</Button>
     </main>
   );
 }

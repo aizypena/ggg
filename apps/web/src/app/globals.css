@@ -3,6 +3,10 @@
 /* ── Fonts (Google Fonts + Material Symbols) ───────────────────────── */
 @import url("https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200");
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 /* ── GGG theme tokens (BRAND.md §2) ────────────────────────────────── */
 @theme {
@@ -171,5 +175,99 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* shadcn design tokens mapped to GGG brand colors (BRAND.md §2) — not defaults.
+   GGG ships dark-only, so :root mirrors .dark and the same brand values apply. */
+.dark,
+:root {
+  --background: #131314;
+  --foreground: #e5e2e3;
+  --card: #0e0e0f;
+  --card-foreground: #e5e2e3;
+  --popover: #201f20;
+  --popover-foreground: #e5e2e3;
+  --primary: #8b5cf6;
+  --primary-foreground: #ffffff;
+  --secondary: #cdf200;
+  --secondary-foreground: #181e00;
+  --muted: #1c1b1c;
+  --muted-foreground: #cbc3d7;
+  --accent: #a078ff;
+  --accent-foreground: #ffffff;
+  --destructive: #93000a;
+  --destructive-foreground: #ffdad6;
+  --border: #494454;
+  --input: #353436;
+  --ring: #8b5cf6;
+  --radius: 0.5rem;
+  --chart-1: #cdf200;
+  --chart-2: #a078ff;
+  --chart-3: #8b5cf6;
+  --chart-4: #b4d400;
+  --chart-5: #6d3bd7;
+  --sidebar: #0e0e0f;
+  --sidebar-foreground: #e5e2e3;
+  --sidebar-primary: #8b5cf6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #a078ff;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #494454;
+  --sidebar-ring: #8b5cf6;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
   }
 }

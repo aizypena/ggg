@@ -9,6 +9,7 @@ const eslintConfig = [
       "node_modules/**",
       "prisma/migrations/**",
       "src/generated/**",
+      "src/contract-client/**",
       "src/components/ui/**",
     ],
   },

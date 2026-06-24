@@ -28,12 +28,12 @@ export function WinnersPanel({ winners, asset }: { winners: Winner[]; asset: "XL
               >
                 {medalIcon[w.rank - 1] ?? "emoji_events"}
               </span>
-              <span className="data-mono text-on-surface" data-mono>
+              <span className="data-mono text-on-surface">
                 {w.playerAddr.slice(0, 6)}…{w.playerAddr.slice(-6)}
               </span>
             </span>
             <span className="flex items-center gap-4">
-              <span className="data-mono text-acid-yellow" data-mono>
+              <span className="data-mono text-acid-yellow">
                 {fmt(w.amount)} {asset}
               </span>
               {w.explorerUrl && (

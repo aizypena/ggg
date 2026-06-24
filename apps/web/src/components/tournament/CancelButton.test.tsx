@@ -138,6 +138,7 @@ describe("CancelButton", () => {
   });
 
   it("confirm buttons are disabled while pending", async () => {
+    // Control the fetch so we can inspect the UI while the request is in-flight.
     let resolveFetch!: (v: unknown) => void;
     vi.stubGlobal(
       "fetch",
@@ -150,12 +151,36 @@ describe("CancelButton", () => {
     );
 
     render(<CancelButton tournamentId="t_1" passphrase="P" />);
+
+    // Open the confirm dialog.
     fireEvent.click(screen.getByRole("button", { name: /cancel & refund/i }));
-    fireEvent.click(screen.getByRole("button", { name: /confirm cancel/i }));
+    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
 
-    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+    // Snapshot the confirm-button element BEFORE clicking — it is NOT disabled yet.
+    const confirmBtnBefore = screen.getByRole("button", { name: /confirm cancel/i });
+    expect(confirmBtnBefore).not.toBeDisabled();
 
-    // Resolve to clean up
+    // Click confirm → triggers handleConfirm → setPhase("submitting") fires
+    // synchronously; React 19 flushes the update inside the event dispatch,
+    // so the alertdialog unmounts immediately and the SubmitStateModal mounts.
+    fireEvent.click(confirmBtnBefore);
+
+    // The alertdialog must be gone — confirm buttons are no longer in the DOM.
+    // If a future refactor makes them visible during pending, they MUST be disabled
+    // (that is what disabled={isPending} on those buttons guards against).
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    expect(screen.queryByRole("button", { name: /confirm cancel/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: /go back/i })).toBeNull();
+
+    // isPending is now true → SubmitStateModal should appear (after microtask flush).
+    await waitFor(() =>
+      expect(screen.getByRole("dialog", { name: /submitting transaction/i })).toBeInTheDocument(),
+    );
+
+    // The "Cancel & Refund" trigger is also absent while pending — no re-entry point.
+    expect(screen.queryByRole("button", { name: /cancel & refund/i })).toBeNull();
+
+    // Resolve the fetch to let the component settle and avoid leaking the promise.
     resolveFetch(
       new Response(JSON.stringify({ ok: false, error: "cancelled" }), {
         status: 409,

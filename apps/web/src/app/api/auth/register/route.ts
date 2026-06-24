@@ -37,7 +37,8 @@ export async function POST(req: Request): Promise<Response> {
   const ip = clientIp(req);
   const byIp = await rateLimit(`register:ip:${ip}`, { limit: 5, windowSec: 3600 });
   const byUser = await rateLimit(`register:user:${username}`, { limit: 3, windowSec: 3600 });
-  if (!byIp.ok || !byUser.ok) return err("TOO_MANY_REQUESTS", "Too many attempts. Try again later.", 429);
+  if (!byIp.ok || !byUser.ok)
+    return err("TOO_MANY_REQUESTS", "Too many attempts. Try again later.", 429);
 
   // 4. Create the ORGANIZER. Rely on the unique constraint for dedupe → generic error.
   try {

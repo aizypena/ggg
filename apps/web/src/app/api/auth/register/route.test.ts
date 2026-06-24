@@ -59,7 +59,12 @@ describe("POST /api/auth/register", () => {
   });
 
   it("rejects a cross-origin request (CSRF)", async () => {
-    const res = await POST(makeReq({ username: "x", password: "a-good-enough-password" }, { origin: "https://evil.example" }));
+    const res = await POST(
+      makeReq(
+        { username: "x", password: "a-good-enough-password" },
+        { origin: "https://evil.example" },
+      ),
+    );
     expect(res.status).toBe(403);
     expect(create).not.toHaveBeenCalled();
   });

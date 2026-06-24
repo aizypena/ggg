@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/lib/db", () => ({ prisma: { user: { findUnique: vi.fn() } } }));
-vi.mock("@/lib/env", () => ({ env: { SESSION_SECRET: "x".repeat(40), APP_URL: "http://localhost:3000" } }));
+vi.mock("@/lib/env", () => ({
+  env: { SESSION_SECRET: "x".repeat(40), APP_URL: "http://localhost:3000" },
+}));
 vi.mock("@/lib/session-store", () => ({
   createSession: vi.fn(),
   newSessionId: () => "sid-fixed",
@@ -25,7 +27,10 @@ describe("authorizeCredentials", () => {
       role: "ORGANIZER",
       passwordHash: await hashPassword("a-good-enough-password"),
     });
-    const user = await authorizeCredentials({ username: "organiser", password: "a-good-enough-password" });
+    const user = await authorizeCredentials({
+      username: "organiser",
+      password: "a-good-enough-password",
+    });
     expect(user).toEqual({ id: "u1", username: "organiser", role: "ORGANIZER" });
   });
 
@@ -41,7 +46,9 @@ describe("authorizeCredentials", () => {
 
   it("returns null when the user does not exist (same shape as wrong password)", async () => {
     findUnique.mockResolvedValue(null);
-    expect(await authorizeCredentials({ username: "ghost", password: "a-good-enough-password" })).toBeNull();
+    expect(
+      await authorizeCredentials({ username: "ghost", password: "a-good-enough-password" }),
+    ).toBeNull();
   });
 
   it("returns null on malformed input", async () => {

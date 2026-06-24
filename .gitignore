@@ -30,3 +30,6 @@ coverage/
 
 # local-only docker override (shared-sandbox port remap)
 docker-compose.override.yml
+
+# Claude Code local worktrees (never commit)
+.claude/worktrees/

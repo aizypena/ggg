@@ -26,7 +26,10 @@ export async function authorizeCredentials(raw: unknown): Promise<SessionUser | 
   const user = await prisma.user.findUnique({ where: { username } });
   if (!user) {
     // Constant-ish work to blunt timing enumeration.
-    await verifyPassword("$argon2id$v=19$m=19456,t=2,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", password);
+    await verifyPassword(
+      "$argon2id$v=19$m=19456,t=2,p=1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      password,
+    );
     return null;
   }
   const ok = await verifyPassword(user.passwordHash, password);

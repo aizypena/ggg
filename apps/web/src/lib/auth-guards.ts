@@ -22,9 +22,7 @@ export class AuthError extends Error {
 // Source of truth for "who is logged in" in handlers/server components.
 // Verifies the cookie session AND that the sessionId is still in Redis.
 export async function getCurrentUser(): Promise<SessionUser | null> {
-  const session = (await auth()) as
-    | { user?: SessionUser; sid?: string }
-    | null;
+  const session = (await auth()) as { user?: SessionUser; sid?: string } | null;
   if (!session?.user || !session.sid) return null;
   if (!(await isSessionValid(session.user.id, session.sid))) return null;
   return session.user;

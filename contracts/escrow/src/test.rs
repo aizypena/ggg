@@ -570,3 +570,38 @@ fn cancel_emits_cancelled_event() {
     );
 }
 
+#[test]
+fn finalize_assigns_dust_to_first_and_conserves_pool() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (token_addr, sac, token) = create_token(&env, &admin);
+    let organizer = Address::generate(&env);
+    let referee = Address::generate(&env);
+    let escrow = create_escrow(&env);
+    // entry_fee = 1 (smallest unit), 3 players → pool = 3, indivisible by bps.
+    escrow.initialize(&organizer, &referee, &token_addr, &1i128, &bps(&env));
+
+    let p1 = { let p = Address::generate(&env); sac.mint(&p, &100i128); escrow.join_tournament(&p); p };
+    let p2 = { let p = Address::generate(&env); sac.mint(&p, &100i128); escrow.join_tournament(&p); p };
+    let p3 = { let p = Address::generate(&env); sac.mint(&p, &100i128); escrow.join_tournament(&p); p };
+
+    assert_eq!(escrow.get_pool(), 3i128);
+    escrow.finalize_results(&p1, &p2, &p3);
+
+    // floor(3*6000/10000)=1, floor(3*3000/10000)=0, floor(3*1000/10000)=0
+    // distributed = 1; dust = 2; 1st = 1+2 = 3.
+    let r1 = escrow.get_reward(&p1);
+    let r2 = escrow.get_reward(&p2);
+    let r3 = escrow.get_reward(&p3);
+    assert_eq!(r1, 3i128);
+    assert_eq!(r2, 0i128);
+    assert_eq!(r3, 0i128);
+    // Conservation: payouts sum to pool, escrow fully drained.
+    assert_eq!(r1 + r2 + r3, 3i128);
+    assert_eq!(token.balance(&escrow.address), 0i128);
+    assert_eq!(token.balance(&p1), 100 - 1 + 3); // 102
+    assert_eq!(token.balance(&p2), 100 - 1 + 0); // 99
+    assert_eq!(token.balance(&p3), 100 - 1 + 0); // 99
+}
+

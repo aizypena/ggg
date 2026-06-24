@@ -101,6 +101,26 @@ body {
   font-variation-settings: "FILL" 1;
 }
 
+/* ── Typography utilities (BRAND.md §3) ───────────────────────────── */
+/* data-mono: Space Mono 14px/1.4/-0.01em/500 — for wallet/tx/contract addresses + data values */
+.data-mono {
+  font-family: "Space Mono", monospace;
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  font-weight: 500;
+}
+
+/* label-caps: Space Mono 12px/1/0.1em/700 UPPERCASE — for eyebrows, nav, badges, button labels */
+.label-caps {
+  font-family: "Space Mono", monospace;
+  font-size: 0.75rem; /* 12px */
+  line-height: 1;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 /* ── Signature classes (BRAND.md §5) ───────────────────────────────── */
 .brutalist-border {
   border: 2px solid #958ea0;

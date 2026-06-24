@@ -104,7 +104,7 @@ export function SettlementConsole({
     }
   }
 
-  const modalOpen = phase === "submitting" || phase === "signing" || phase === "error";
+  const modalOpen = phase === "submitting" || phase === "signing";
 
   return (
     <>

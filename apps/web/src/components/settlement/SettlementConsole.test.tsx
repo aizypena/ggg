@@ -95,7 +95,7 @@ describe("SettlementConsole", () => {
     await waitFor(() => expect(push).toHaveBeenCalledWith("/tournaments/t_1"));
   });
 
-  it("disables finalize until all three slots are filled", () => {
+  it("disables finalize until all three slots are filled (filled+distinct guard, not wallet guard)", async () => {
     render(
       <SettlementConsole
         tournamentId="t_1"
@@ -104,7 +104,31 @@ describe("SettlementConsole", () => {
         passphrase="P"
       />,
     );
-    expect(screen.getByRole("button", { name: /finalize payouts/i })).toBeDisabled();
+
+    // First: connect the referee wallet so isReferee becomes true.
+    // This rules out the wallet guard as the reason finalize is disabled.
+    fireEvent.click(screen.getByRole("button", { name: /connect wallet/i }));
+    await screen.findByText(/GREFRE…REFRE/i);
+
+    const finalizeBtn = screen.getByRole("button", { name: /finalize payouts/i });
+
+    // 0 slots filled — disabled because slots are not filled (isReferee is true)
+    expect(finalizeBtn).toBeDisabled();
+
+    // 1 slot filled — still disabled
+    const assign1Buttons = screen.getAllByRole("button", { name: /assign 1st/i });
+    fireEvent.click(assign1Buttons[0]!); // assign player[0] → 1st
+    expect(finalizeBtn).toBeDisabled();
+
+    // 2 slots filled — still disabled
+    const assign2Buttons = screen.getAllByRole("button", { name: /assign 2nd/i });
+    fireEvent.click(assign2Buttons[0]!); // assign player[1] → 2nd
+    expect(finalizeBtn).toBeDisabled();
+
+    // 3rd distinct slot filled — now enabled
+    const assign3Buttons = screen.getAllByRole("button", { name: /assign 3rd/i });
+    fireEvent.click(assign3Buttons[0]!); // assign player[2] → 3rd
+    expect(finalizeBtn).not.toBeDisabled();
   });
 
   it("POSTs with x-wallet-address header and {first,second,third} body", async () => {

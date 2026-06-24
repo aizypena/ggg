@@ -1,0 +1,63 @@
+import { Client } from "@/contract-client";
+import { env } from "@/lib/env";
+import { networkName, networkPassphrase } from "./client";
+import { stellarContractId, stellarPublicKey } from "./validation";
+import { StellarError } from "./errors";
+
+function parse<T>(schema: { safeParse: (v: unknown) => { success: boolean } }, v: unknown, label: string): void {
+  if (!schema.safeParse(v).success) throw new StellarError("INVALID_INPUT", `Invalid ${label}`);
+}
+
+function clientFor(contractId: string, source: string): InstanceType<typeof Client> {
+  return new Client({
+    contractId,
+    publicKey: source,
+    networkPassphrase: networkPassphrase(),
+    rpcUrl: env.SOROBAN_RPC_URL,
+  });
+}
+
+export async function buildJoinTx(params: {
+  contractId: string;
+  playerAddress: string;
+}): Promise<{ xdr: string; network: string }> {
+  parse(stellarContractId, params.contractId, "contractId");
+  parse(stellarPublicKey, params.playerAddress, "playerAddress");
+  const c = clientFor(params.contractId, params.playerAddress);
+  const assembled = await c.join_tournament({ player: params.playerAddress });
+  return { xdr: assembled.toXDR(), network: networkName() };
+}
+
+export async function buildFinalizeTx(params: {
+  contractId: string;
+  refereeAddress: string;
+  first: string;
+  second: string;
+  third: string;
+}): Promise<{ xdr: string; network: string }> {
+  parse(stellarContractId, params.contractId, "contractId");
+  parse(stellarPublicKey, params.refereeAddress, "refereeAddress");
+  for (const [k, v] of [["first", params.first], ["second", params.second], ["third", params.third]] as const) {
+    parse(stellarPublicKey, v, k);
+  }
+  const winners = new Set([params.first, params.second, params.third]);
+  if (winners.size !== 3) throw new StellarError("INVALID_INPUT", "Winners must be distinct");
+  const c = clientFor(params.contractId, params.refereeAddress);
+  const assembled = await c.finalize_results({
+    first: params.first,
+    second: params.second,
+    third: params.third,
+  });
+  return { xdr: assembled.toXDR(), network: networkName() };
+}
+
+export async function buildCancelTx(params: {
+  contractId: string;
+  organizerAddress: string;
+}): Promise<{ xdr: string; network: string }> {
+  parse(stellarContractId, params.contractId, "contractId");
+  parse(stellarPublicKey, params.organizerAddress, "organizerAddress");
+  const c = clientFor(params.contractId, params.organizerAddress);
+  const assembled = await c.cancel_tournament();
+  return { xdr: assembled.toXDR(), network: networkName() };
+}

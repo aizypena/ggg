@@ -1,7 +1,12 @@
 import { Client } from "@/contract-client";
 import { env } from "@/lib/env";
 import { networkName, networkPassphrase } from "./client";
-import { stellarContractId, stellarPublicKey } from "./validation";
+import {
+  stellarContractId,
+  stellarPublicKey,
+  i128Amount,
+  distributionBps as bpsSchema,
+} from "./validation";
 import { StellarError } from "./errors";
 
 function parse<T>(schema: { safeParse: (v: unknown) => { success: boolean } }, v: unknown, label: string): void {
@@ -59,5 +64,38 @@ export async function buildCancelTx(params: {
   parse(stellarPublicKey, params.organizerAddress, "organizerAddress");
   const c = clientFor(params.contractId, params.organizerAddress);
   const assembled = await c.cancel_tournament();
+  return { xdr: assembled.toXDR(), network: networkName() };
+}
+
+export async function buildDeployInitializeTx(params: {
+  organizerAddress: string;
+  refereeAddress: string;
+  tokenAddr: string;
+  entryFee: bigint;
+  distributionBps: [number, number, number];
+}): Promise<{ xdr: string; network: string }> {
+  parse(stellarPublicKey, params.organizerAddress, "organizerAddress");
+  parse(stellarPublicKey, params.refereeAddress, "refereeAddress");
+  parse(stellarContractId, params.tokenAddr, "tokenAddr");
+  parse(i128Amount, params.entryFee, "entryFee");
+  parse(bpsSchema, params.distributionBps, "distributionBps");
+  if (params.organizerAddress === params.refereeAddress) {
+    throw new StellarError("INVALID_INPUT", "organizer must differ from referee");
+  }
+  const assembled = await Client.deploy(
+    {
+      wasmHash: env.ESCROW_WASM_HASH,
+      publicKey: params.organizerAddress,
+      networkPassphrase: networkPassphrase(),
+      rpcUrl: env.SOROBAN_RPC_URL,
+    },
+    {
+      organizer: params.organizerAddress,
+      referee: params.refereeAddress,
+      token: params.tokenAddr,
+      entry_fee: params.entryFee,
+      distribution_bps: params.distributionBps,
+    },
+  );
   return { xdr: assembled.toXDR(), network: networkName() };
 }

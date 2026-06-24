@@ -5,9 +5,11 @@ const built = (xdr: string) => ({ toXDR: () => xdr });
 const joinFn = vi.fn().mockResolvedValue(built("JOIN_XDR"));
 const finalizeFn = vi.fn().mockResolvedValue(built("FINALIZE_XDR"));
 const cancelFn = vi.fn().mockResolvedValue(built("CANCEL_XDR"));
+const deployFn = vi.fn().mockResolvedValue(built("DEPLOY_XDR"));
 const ClientCtor = vi.fn().mockImplementation(function () {
   return { join_tournament: joinFn, finalize_results: finalizeFn, cancel_tournament: cancelFn };
 });
+(ClientCtor as unknown as { deploy: typeof deployFn }).deploy = deployFn;
 
 vi.mock("@/contract-client", () => ({ Client: ClientCtor }));
 vi.mock("./client", () => ({
@@ -77,5 +79,46 @@ describe("buildCancelTx", () => {
     const res = await buildCancelTx({ contractId: C, organizerAddress: G });
     expect(res.xdr).toBe("CANCEL_XDR");
     expect(ClientCtor).toHaveBeenCalledWith(expect.objectContaining({ publicKey: G }));
+  });
+});
+
+describe("buildDeployInitializeTx", () => {
+  it("returns simulated deploy+initialize XDR with token + bps", async () => {
+    const { buildDeployInitializeTx } = await import("./builders");
+    const res = await buildDeployInitializeTx({
+      organizerAddress: G,
+      refereeAddress: G2,
+      tokenAddr: C,
+      entryFee: 10000000n,
+      distributionBps: [6000, 3000, 1000],
+    });
+    expect(res).toEqual({ xdr: "DEPLOY_XDR", network: "testnet" });
+  });
+  it("rejects when organizer === referee", async () => {
+    const { buildDeployInitializeTx } = await import("./builders");
+    await expect(
+      buildDeployInitializeTx({
+        organizerAddress: G, refereeAddress: G, tokenAddr: C,
+        entryFee: 1n, distributionBps: [6000, 3000, 1000],
+      }),
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+  });
+  it("rejects bps not summing to 10000", async () => {
+    const { buildDeployInitializeTx } = await import("./builders");
+    await expect(
+      buildDeployInitializeTx({
+        organizerAddress: G, refereeAddress: G2, tokenAddr: C,
+        entryFee: 1n, distributionBps: [6000, 3000, 999],
+      }),
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
+  });
+  it("rejects non-positive entry fee", async () => {
+    const { buildDeployInitializeTx } = await import("./builders");
+    await expect(
+      buildDeployInitializeTx({
+        organizerAddress: G, refereeAddress: G2, tokenAddr: C,
+        entryFee: 0n, distributionBps: [6000, 3000, 1000],
+      }),
+    ).rejects.toMatchObject({ code: "INVALID_INPUT" });
   });
 });

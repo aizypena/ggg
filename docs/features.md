@@ -67,4 +67,5 @@ End-to-end live-propagation verification (P5.12) is documented as manual steps i
 
 Wrapping the Phase 0–5 app in test, CI, security, and deployment layers (no new product features).
 
+- **Security headers (P6.4):** hardened the shared `buildSecurityHeaders()` source of truth (consumed by both `next.config.ts` `headers()` and the auth middleware) — CSP now allows the Stellar.Expert explorer origin (a distinct domain from the `*.stellar.org` RPC/Horizon wildcard) and the S3/MinIO image origin (`S3_PUBLIC_ORIGIN`), and adds `object-src 'none'` and `upgrade-insecure-requests`. Strengthened the unit test to assert the exact HSTS/Referrer/X-Frame/X-Content-Type/Permissions-Policy values and every locked-down CSP directive.
 - **pnpm audit clean (P6.5):** all 11 `high` advisories were transitive `axios` (`<1.16.0`, pulled via `@stellar/stellar-sdk`). Added a root `pnpm.overrides` entry (`axios@<1.16.0` → `^1.16.0`, resolves to 1.18.1), bringing `pnpm audit --audit-level high` to a clean exit (0 high; 3 moderate remain, below the gate).

@@ -15,20 +15,21 @@ vi.mock("next-auth/middleware", () => ({
 
         return fn(req);
       },
-      { config: options }
+      { config: options },
     ) as ReturnType<typeof withAuth>;
   }),
 }));
 
-const mod = (await import("../middleware")) as unknown as { default: (req: NextRequest) => Promise<Response>; config: { matcher: string[] } };
+const mod = (await import("../middleware")) as unknown as {
+  default: (req: NextRequest) => Promise<Response>;
+  config: { matcher: string[] };
+};
 const { default: middleware, config } = mod;
 
 describe("middleware", () => {
   describe("config.matcher", () => {
     it("excludes static assets", () => {
-      expect(config.matcher).toEqual([
-        "/((?!_next/static|_next/image|favicon.ico).*)",
-      ]);
+      expect(config.matcher).toEqual(["/((?!_next/static|_next/image|favicon.ico).*)"]);
     });
   });
 

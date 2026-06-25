@@ -1,7 +1,8 @@
-// Event subscriber service — implemented in Phase 5.
-// Phase 0 ships only the workspace member so later phases have a home.
-function main(): void {
-  console.log("subscriber: not implemented (Phase 5)");
+async function main(): Promise<void> {
+  // poll loop wired in Task 8 (P5.8)
 }
 
-main();
+main().catch((err: unknown) => {
+  console.error("[subscriber] fatal", err);
+  process.exit(1);
+});

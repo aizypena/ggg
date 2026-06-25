@@ -86,6 +86,9 @@ jobs:
       - name: Integration tests (Postgres + Redis)
         run: pnpm --filter web test:integration
 
+      - name: Production build
+        run: pnpm --filter web build
+
       - name: Audit (high+)
         run: pnpm audit --audit-level high
 

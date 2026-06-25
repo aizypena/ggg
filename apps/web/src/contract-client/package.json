@@ -2,6 +2,7 @@
   "version": "0.0.0",
   "name": "contract-client",
   "type": "module",
+  "main": "./src/index.ts",
   "exports": "./src/index.ts",
   "typings": "./src/index.ts",
   "scripts": {

@@ -1,5 +1,9 @@
 import argon2 from "argon2";
-import { z } from "zod";
+
+// Re-export the client-safe schema so existing `@/lib/password` importers keep
+// working; it lives in password-schema.ts (no argon2) so client bundles never
+// pull argon2/`fs` in through auth-schemas.ts.
+export { passwordSchema } from "./password-schema";
 
 // argon2id with sensible memory/time params (AGENT §7).
 const ARGON2_OPTS: argon2.Options = {
@@ -20,8 +24,3 @@ export async function verifyPassword(hash: string, plain: string): Promise<boole
     return false; // fail closed on malformed hash; never throw to caller
   }
 }
-
-export const passwordSchema = z
-  .string()
-  .min(10, "Password must be at least 10 characters")
-  .max(200, "Password is too long");

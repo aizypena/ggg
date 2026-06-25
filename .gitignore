@@ -35,3 +35,8 @@ docker-compose.override.yml
 
 # Claude Code local worktrees (never commit)
 .claude/worktrees/
+
+# Playwright E2E artifacts + funded fixture keypairs (Testnet secrets, never commit)
+apps/web/.e2e/
+apps/web/playwright-report/
+apps/web/test-results/

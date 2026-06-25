@@ -5,13 +5,49 @@ on:
     branches: [main]
   pull_request:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  typecheck-lint:
+  app:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: ggg
+          POSTGRES_PASSWORD: ggg
+          POSTGRES_DB: ggg_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ggg"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     env:
-      # prisma.config.ts resolves env("DATABASE_URL") at load time; `prisma generate`
-      # never connects, so a placeholder is enough to satisfy the config in CI.
-      DATABASE_URL: postgresql://ggg:ggg@localhost:5432/ggg
+      NODE_ENV: test
+      APP_URL: http://localhost:3000
+      DATABASE_URL: postgresql://ggg:ggg@localhost:5432/ggg_test
+      REDIS_URL: redis://localhost:6379
+      SESSION_SECRET: ci_session_secret_ci_session_secret_32b
+      CSRF_SECRET: ci_csrf_secret_ci_csrf_secret_ci_csrf32
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: ci_admin_pw_change_me
+      STELLAR_NETWORK: testnet
+      SOROBAN_RPC_URL: https://soroban-testnet.stellar.org
+      HORIZON_URL: https://horizon-testnet.stellar.org
+      NETWORK_PASSPHRASE: "Test SDF Network ; September 2015"
+      S3_ENDPOINT: http://localhost:9000
+      S3_REGION: us-east-1
+      S3_BUCKET: ggg-uploads
+      S3_ACCESS_KEY_ID: ci_access_key
+      S3_SECRET_ACCESS_KEY: ci_secret_key
+      S3_FORCE_PATH_STYLE: "true"
     steps:
       - uses: actions/checkout@v5
 
@@ -29,6 +65,12 @@ jobs:
       - name: Generate Prisma client
         run: pnpm --filter web db:generate
 
+      - name: Apply migrations
+        run: pnpm --filter web exec prisma migrate deploy
+
+      - name: Seed database
+        run: pnpm --filter web db:seed
+
       - name: Typecheck
         run: pnpm -r typecheck
 
@@ -37,3 +79,68 @@ jobs:
 
       - name: Prettier check
         run: pnpm format:check
+
+      - name: Unit tests
+        run: pnpm -r test
+
+      - name: Integration tests (Postgres + Redis)
+        run: pnpm --filter web test:integration
+
+      - name: Audit (high+)
+        run: pnpm audit --audit-level high
+
+  contract:
+    runs-on: ubuntu-latest
+    env:
+      STELLAR_CLI_VERSION: "27.0.0"
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          # stellar-cli v22 `contract build` targets wasm32-unknown-unknown;
+          # newer toolchains/CLIs use wasm32v1-none. Install both so the build
+          # works regardless of which the pinned CLI selects.
+          targets: wasm32-unknown-unknown, wasm32v1-none
+
+      # Install the Stellar CLI from the official GitHub release tarball.
+      # Avoids cargo install from source (which pulls libdbus-sys and requires
+      # system libs libdbus-1-dev/pkg-config unavailable on the runner) and
+      # avoids cargo-binstall, which can hit GitHub API 403 rate limits in CI.
+      - name: Install stellar-cli
+        run: |
+          set -e
+          ARCH=$(uname -m)
+          case "$ARCH" in
+            x86_64) TARGET="x86_64-unknown-linux-gnu" ;;
+            aarch64) TARGET="aarch64-unknown-linux-gnu" ;;
+            *) echo "unsupported arch: $ARCH"; exit 1 ;;
+          esac
+          TARBALL="stellar-cli-${STELLAR_CLI_VERSION}-${TARGET}.tar.gz"
+          URL="https://github.com/stellar/stellar-cli/releases/download/v${STELLAR_CLI_VERSION}/${TARBALL}"
+          curl --proto '=https' --tlsv1.2 -sSL -o "/tmp/${TARBALL}" "$URL"
+          mkdir -p /tmp/stellar-cli
+          tar -xzf "/tmp/${TARBALL}" -C /tmp/stellar-cli
+          install -m 755 /tmp/stellar-cli/stellar /usr/local/bin/stellar
+          stellar --version
+
+      - name: Contract build
+        run: cd contracts/escrow && stellar contract build
+
+      - name: Contract tests
+        run: cd contracts/escrow && cargo test
+
+# NOTE: Branch protection (requiring the `app` + `contract` checks before merge)
+# is configured once per repo by a maintainer with admin rights, e.g.:
+#   gh api -X PUT repos/:owner/:repo/branches/main/protection \
+#     -F required_status_checks.strict=true \
+#     -F 'required_status_checks.contexts[]=app' \
+#     -F 'required_status_checks.contexts[]=contract' \
+#     -F enforce_admins=true \
+#     -F required_pull_request_reviews.required_approving_review_count=1 \
+#     -F restrictions=
+# It cannot be set from CI itself. See RUNBOOK.md.
+#
+# Playwright E2E (apps/web/e2e) runs out-of-band (scheduled/manual) against
+# Testnet — it depends on Friendbot + live network and is non-deterministic for
+# merge gating, so it is intentionally NOT part of this PR gate.

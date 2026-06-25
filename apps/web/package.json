@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:integration": "vitest run -c vitest.integration.config.ts",
     "test:watch": "vitest",
+    "e2e": "playwright test",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:generate": "prisma generate"
@@ -45,6 +46,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4.3.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

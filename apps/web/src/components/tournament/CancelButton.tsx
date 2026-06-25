@@ -65,6 +65,7 @@ export function CancelButton({
         <button
           type="button"
           onClick={handleInitiate}
+          data-testid="cancel-button"
           className="label-caps rounded-lg border-2 border-error px-4 py-2 text-error hover:bg-error-container focus-visible:outline focus-visible:outline-2 focus-visible:outline-error"
         >
           Cancel & Refund
@@ -87,6 +88,7 @@ export function CancelButton({
               onClick={handleConfirm}
               disabled={isPending}
               aria-disabled={isPending}
+              data-testid="confirm-cancel"
               className="label-caps rounded-lg bg-error px-4 py-2 text-on-error disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-error"
             >
               Confirm Cancel

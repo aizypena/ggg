@@ -12,6 +12,7 @@ export function StatusChip({ status }: { status: Status }) {
   return (
     <span
       className={`label-caps inline-flex items-center rounded-full border-2 px-3 py-1 ${styles[status]}`}
+      data-testid="status-chip"
       data-status={status}
     >
       {status}

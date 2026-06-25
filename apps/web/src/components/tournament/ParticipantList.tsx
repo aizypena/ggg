@@ -17,7 +17,11 @@ export function ParticipantList({ participants }: { participants: Participant[] 
       <h2 className="label-caps text-on-surface-variant">Participants</h2>
       <ul className="mt-4 divide-y divide-outline-variant">
         {participants.map((p) => (
-          <li key={p.playerAddr} className="flex items-center justify-between py-3">
+          <li
+            key={p.playerAddr}
+            data-testid="participant-row"
+            className="flex items-center justify-between py-3"
+          >
             <span className="data-mono text-acid-yellow">{trunc(p.playerAddr)}</span>
             <time className="data-mono text-xs text-on-surface-variant" dateTime={p.joinedAt}>
               {new Date(p.joinedAt).toLocaleTimeString()}

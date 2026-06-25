@@ -17,7 +17,10 @@ interface QrTileProps {
  */
 export function QrTile({ value, size = 180 }: QrTileProps) {
   return (
-    <div className="violet-accent inline-block rounded-xl bg-surface-container p-4">
+    <div
+      className="violet-accent inline-block rounded-xl bg-surface-container p-4"
+      data-testid="join-qr"
+    >
       <div
         className="rounded-lg bg-white p-4"
         role="img"

@@ -98,7 +98,10 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: wasm32v1-none
+          # stellar-cli v22 `contract build` targets wasm32-unknown-unknown;
+          # newer toolchains/CLIs use wasm32v1-none. Install both so the build
+          # works regardless of which the pinned CLI selects.
+          targets: wasm32-unknown-unknown, wasm32v1-none
 
       # Install the Stellar CLI from the official GitHub release tarball.
       # Avoids cargo install from source (which pulls libdbus-sys and requires

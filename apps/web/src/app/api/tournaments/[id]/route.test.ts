@@ -23,6 +23,7 @@ vi.mock("@/lib/db", () => ({
         thirdBps: 1000,
         contractId: "C1",
         tokenAddr: null,
+        organizerId: "user_org_test",
         organizerAddr: "G_ORG",
         refereeAddr: "G_REF",
         participants: [

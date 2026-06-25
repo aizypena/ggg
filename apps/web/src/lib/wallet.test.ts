@@ -99,8 +99,9 @@ describe("signAndSubmit", () => {
       "fetch",
       vi.fn(
         async () =>
+          // HTTP 200 with an application-level ok:false envelope (the API's own error format)
           new Response(JSON.stringify({ ok: false, error: "boom" }), {
-            status: 502,
+            status: 200,
             headers: { "content-type": "application/json" },
           }),
       ),
@@ -113,13 +114,31 @@ describe("signAndSubmit", () => {
       "fetch",
       vi.fn(
         async () =>
+          // HTTP 200 with an application-level ok:false envelope (no error message)
           new Response(JSON.stringify({ ok: false }), {
-            status: 500,
+            status: 200,
             headers: { "content-type": "application/json" },
           }),
       ),
     );
     await expect(signAndSubmit("U", "join", "/x", PASS)).rejects.toThrow("Submission failed");
+  });
+
+  it("throws a clean Error (not SyntaxError) when server returns non-JSON 5xx", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: false,
+        status: 502,
+        json: async () => {
+          throw new SyntaxError("Unexpected token <");
+        },
+      })),
+    );
+    await expect(signAndSubmit("U", "deploy", "/x", PASS)).rejects.toThrow("Submit failed: 502");
+    await expect(signAndSubmit("U", "deploy", "/x", PASS)).rejects.not.toThrow(
+      expect.any(SyntaxError),
+    );
   });
 
   it("throws when signTransaction returns an error field", async () => {

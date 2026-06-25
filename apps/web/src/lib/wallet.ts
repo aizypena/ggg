@@ -51,6 +51,10 @@ export async function signAndSubmit(
     body: JSON.stringify({ signedXdr: signedTxXdr, intent }),
   });
 
+  // Guard against non-JSON error responses (e.g. a 5xx HTML error page from a proxy)
+  // before attempting res.json(), which would throw a raw SyntaxError on non-JSON bodies.
+  if (!res.ok) throw new Error(`Submit failed: ${res.status}`);
+
   const json = (await res.json()) as { ok: boolean; data?: SubmitResult; error?: string };
   if (!json.ok) throw new Error(json.error ?? "Submission failed");
   return json.data as SubmitResult;

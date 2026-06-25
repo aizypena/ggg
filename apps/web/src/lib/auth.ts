@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import { verifyPassword } from "@/lib/password";
 import { credentialsSchema, type CredentialsInput } from "@/lib/auth-schemas";
-import { createSession, newSessionId } from "@/lib/session-store";
+import { createSession, newSessionId, revokeSession } from "@/lib/session-store";
 import type { AppRole } from "../../types/next-auth";
 
 export const SESSION_TTL_SEC = 60 * 60 * 8; // 8h short-lived session
@@ -87,6 +87,9 @@ export const authOptions: AuthOptions = {
       return session;
     },
   },
+  events: {
+    signOut: onSignOutRevoke,
+  },
 };
 
 const nextAuthHandler = NextAuth(authOptions);
@@ -95,4 +98,14 @@ export const handlers = { GET: nextAuthHandler, POST: nextAuthHandler };
 // Wrapper for server-side session retrieval (replaces v5's `auth()`)
 export async function auth() {
   return getServerSession(authOptions);
+}
+
+export async function onSignOutRevoke({
+  token,
+}: {
+  token?: { id?: string; sid?: string } | null;
+}): Promise<void> {
+  if (token?.id && token?.sid) {
+    await revokeSession(token.id, token.sid);
+  }
 }

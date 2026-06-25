@@ -100,3 +100,10 @@ model ContractEvent {
 
   @@index([tournamentId, createdAt])
 }
+
+model SubscriberCursor {
+  contractId String   @id // C... contract address
+  ledger     Int // last fully-processed Soroban ledger
+  hzCursor   String? // last Horizon payments paging_token
+  updatedAt  DateTime @updatedAt
+}

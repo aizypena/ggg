@@ -17,12 +17,12 @@ interface QrTileProps {
  */
 export function QrTile({ value, size = 180 }: QrTileProps) {
   return (
-    <div
-      className="violet-accent inline-block rounded-xl bg-surface-container p-4"
-      role="img"
-      aria-label="SEP-7 join QR — scan with a Stellar wallet app to join"
-    >
-      <div className="rounded-lg bg-white p-4">
+    <div className="violet-accent inline-block rounded-xl bg-surface-container p-4">
+      <div
+        className="rounded-lg bg-white p-4"
+        role="img"
+        aria-label="SEP-7 join QR — scan with a Stellar wallet app to join"
+      >
         <QRCodeSVG value={value} size={size} level="M" />
       </div>
     </div>

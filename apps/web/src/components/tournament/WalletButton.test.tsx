@@ -46,6 +46,15 @@ describe("WalletButton", () => {
     await waitFor(() => expect(screen.getByText(/GABCDE…FGHIJ/)).toBeInTheDocument());
   });
 
+  it("connected chip has aria-label with full address", async () => {
+    const onConnected = vi.fn();
+    render(<WalletButton onConnected={onConnected} expectedPassphrase="P" />);
+    fireEvent.click(screen.getByRole("button", { name: /connect wallet/i }));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Wallet GABCDEFGHIJABCDEFGHIJ")).toBeInTheDocument(),
+    );
+  });
+
   it("shows an error message when ensureWallet throws", async () => {
     const onConnected = vi.fn();
     mockedEnsureWallet.mockRejectedValueOnce(new Error("Freighter not installed"));

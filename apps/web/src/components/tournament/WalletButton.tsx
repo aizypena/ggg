@@ -14,7 +14,10 @@ export function WalletButton({ expectedPassphrase, onConnected }: WalletButtonPr
 
   if (address) {
     return (
-      <span className="data-mono inline-flex items-center gap-2 rounded-full border-2 border-acid-yellow px-3 py-1 text-acid-yellow">
+      <span
+        className="data-mono inline-flex items-center gap-2 rounded-full border-2 border-acid-yellow px-3 py-1 text-acid-yellow"
+        aria-label={`Wallet ${address}`}
+      >
         <span className="material-symbols-outlined text-base" aria-hidden="true">
           account_balance_wallet
         </span>
@@ -45,7 +48,18 @@ export function WalletButton({ expectedPassphrase, onConnected }: WalletButtonPr
         onClick={handleConnect}
         className="label-caps rounded-lg bg-acid-yellow px-4 py-2 text-on-secondary-fixed transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric-violet-strong disabled:opacity-50"
       >
-        {connecting ? "Connecting…" : "Connect Wallet"}
+        {connecting ? (
+          <span className="inline-flex items-center gap-2">
+            <span
+              className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-on-secondary-fixed border-t-transparent motion-reduce:animate-none"
+              role="status"
+              aria-label="Loading wallet"
+            />
+            Connecting…
+          </span>
+        ) : (
+          "Connect Wallet"
+        )}
       </button>
       {error && (
         <p role="alert" className="mt-2 text-sm text-error">

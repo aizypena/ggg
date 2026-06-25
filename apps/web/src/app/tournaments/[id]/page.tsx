@@ -110,9 +110,20 @@ export default async function TournamentDetailPage({
             />
           )}
 
-          {/* Winners — FINISHED only, and only when payouts exist */}
+          {/* Winners — FINISHED only */}
           {t.status === "FINISHED" && t.winners.length > 0 && (
             <WinnersPanel winners={t.winners} asset={t.asset} />
+          )}
+          {t.status === "FINISHED" && t.winners.length === 0 && (
+            <section
+              aria-label="Winners"
+              className="brutalist-border brutalist-border-active rounded-none p-6"
+            >
+              <p className="label-caps italic text-acid-yellow">Settlement Complete</p>
+              <p className="mt-4 text-sm text-on-surface-variant">
+                No winners recorded for this tournament.
+              </p>
+            </section>
           )}
 
           {/* Participants — always shown */}

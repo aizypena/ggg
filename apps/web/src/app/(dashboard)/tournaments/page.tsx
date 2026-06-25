@@ -17,7 +17,7 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
     cursor: rawParams.cursor,
     take: rawParams.take,
   });
-  const q = parsed.success ? parsed.data : { take: 20 as const };
+  const q = parsed.success ? parsed.data : { take: 20 };
 
   const { items, nextCursor } = await listTournaments(user.id, q);
 

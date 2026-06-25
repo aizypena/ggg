@@ -45,6 +45,26 @@ describe("TournamentListRow", () => {
     expect(screen.getByRole("link")).toHaveAttribute("href", "/tournaments/t_1");
   });
 
+  it("does not contain a heading element inside the link", () => {
+    render(
+      <TournamentListRow
+        t={{
+          id: "t_1",
+          name: "Cup",
+          gameTitle: "SF6",
+          status: "ACTIVE",
+          asset: "XLM",
+          entryFee: "10000000",
+          pool: "30000000",
+          participantCount: 3,
+        }}
+      />,
+    );
+
+    const link = screen.getByRole("link");
+    expect(link.querySelector("h3")).toBeNull();
+  });
+
   it("formats pool correctly for zero amount", () => {
     render(
       <TournamentListRow

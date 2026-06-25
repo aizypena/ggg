@@ -165,6 +165,17 @@ describe("/tournaments/[id] — public detail page", () => {
       expect(screen.getByText(/settlement complete/i)).toBeInTheDocument();
     });
 
+    it("renders zero-winners placeholder when FINISHED with no winners", async () => {
+      mockGetTournamentDetail.mockResolvedValue({
+        ...FINISHED_TOURNAMENT,
+        winners: [],
+      });
+      render(await Page({ params: Promise.resolve({ id: "t_2" }) }));
+
+      expect(screen.getByText(/settlement complete/i)).toBeInTheDocument();
+      expect(screen.getByText(/no winners recorded for this tournament/i)).toBeInTheDocument();
+    });
+
     it("does NOT render JoinCard when FINISHED", async () => {
       mockGetTournamentDetail.mockResolvedValue(FINISHED_TOURNAMENT);
       render(await Page({ params: Promise.resolve({ id: "t_2" }) }));

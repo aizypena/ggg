@@ -26,7 +26,7 @@ export function TournamentListRow({ t }: { t: ListItem }) {
       className="glass-panel flex items-center justify-between rounded-xl p-6 transition-colors hover:bg-surface-container-high focus-visible:outline focus-visible:outline-2 focus-visible:outline-electric-violet-strong"
     >
       <div>
-        <h3 className="text-xl font-bold text-on-surface">{t.name}</h3>
+        <span className="text-xl font-bold text-on-surface">{t.name}</span>
         <p className="label-caps mt-1 text-on-surface-variant">{t.gameTitle}</p>
       </div>
       <div className="flex items-center gap-6">

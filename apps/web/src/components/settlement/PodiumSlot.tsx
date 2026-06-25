@@ -17,7 +17,7 @@ export function PodiumSlot({ rank, addr, onAssign, onClear }: PodiumSlotProps) {
   return (
     <div
       data-testid={`slot-${rank}`}
-      role="region"
+      role="group"
       aria-label={`${label} place slot${addr ? `: ${addr.slice(0, 6)}…${addr.slice(-6)} assigned` : ": empty"}`}
       onDragOver={(e) => {
         e.preventDefault();

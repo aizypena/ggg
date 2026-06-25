@@ -126,7 +126,6 @@ export function JoinCard(props: JoinCardProps) {
             type="button"
             onClick={onJoin}
             disabled={!player || isPending}
-            aria-disabled={!player || isPending}
             className="brutalist-border label-caps bg-electric-violet-strong px-6 py-3 italic text-background transition-transform hover:-translate-y-0.5 active:translate-y-0.5 disabled:opacity-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-acid-yellow"
           >
             Join Tournament
@@ -142,7 +141,7 @@ export function JoinCard(props: JoinCardProps) {
       )}
 
       <SubmitStateModal
-        open={isPending || phase === "success" || phase === "error"}
+        open={isPending || phase === "success"}
         phase={phase}
         {...(errorMsg !== null ? { message: errorMsg } : {})}
         onClose={onModalClose}

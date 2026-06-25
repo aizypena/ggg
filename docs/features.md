@@ -62,3 +62,9 @@ Stood up the standalone `apps/subscriber` worker that ingests on-chain activity 
 - `useTournamentEvents` EventSource hook with auto-reconnect; `<PrizePoolCounter>` ticks up off the stream (key-driven `pool-pop` keyframe, reduced-motion aware) and `<LiveFeed>` renders a human-readable gloss ticker (reduced-motion aware).
 
 End-to-end live-propagation verification (P5.12) is documented as manual steps in the plan/PR — it requires the docker-compose Postgres+Redis stack plus Testnet RPC/Horizon and on-chain transactions, which the CI/sandbox environment does not provide.
+
+## Phase 6 — Hardening & Ship
+
+Wrapping the Phase 0–5 app in test, CI, security, and deployment layers (no new product features).
+
+- **CI gates (P6.6):** expanded `.github/workflows/ci.yml` from the Phase 0 typecheck/lint/prettier job into two gating jobs. `app` runs against Postgres 17 + Redis 7 service containers with the full fail-closed env set, applies migrations (`prisma migrate deploy`), then runs typecheck, lint, prettier, unit tests (`pnpm -r test`), integration tests (`pnpm --filter web test:integration`), and `pnpm audit --audit-level high`. `contract` builds the Soroban WASM (`stellar contract build`) and runs `cargo test`. Branch protection (requiring both checks) is documented as a one-time maintainer step; Playwright E2E runs out-of-band against Testnet, not on the PR gate. Also reformatted three pre-existing files the stricter prettier gate flagged (`middleware.ts` + two tests; formatting only).

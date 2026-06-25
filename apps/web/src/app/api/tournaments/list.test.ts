@@ -1,0 +1,207 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+vi.mock("@/lib/auth-guards", () => ({
+  requireUser: vi.fn(async () => ({ id: "user_1", role: "ORGANIZER" })),
+  AuthError: class AuthError extends Error {
+    readonly status: number;
+    constructor(message: string, status: number) {
+      super(message);
+      this.name = "AuthError";
+      this.status = status;
+    }
+  },
+}));
+vi.mock("@/lib/db", () => ({
+  prisma: { tournament: { findMany: vi.fn() } },
+}));
+vi.mock("@/lib/env", () => ({
+  env: { APP_URL: "http://localhost:3000", STELLAR_NETWORK: "testnet" },
+}));
+vi.mock("@/lib/stellar", async (orig) => {
+  const actual = await orig<typeof import("@/lib/stellar")>();
+  return { ...actual, resolveSacAddress: vi.fn(() => "CSAC...NATIVE") };
+});
+vi.mock("@/lib/csrf", () => ({
+  assertSameOrigin: vi.fn(),
+  CsrfError: class CsrfError extends Error {},
+}));
+vi.mock("@/lib/rate-limit", () => ({
+  rateLimit: vi.fn(async () => ({ ok: true, remaining: 9 })),
+}));
+
+import { GET } from "./route";
+import { requireUser, AuthError } from "@/lib/auth-guards";
+import { prisma } from "@/lib/db";
+import type { NextRequest } from "next/server";
+
+const requireUserMock = requireUser as ReturnType<typeof vi.fn>;
+const findMany = prisma.tournament.findMany as ReturnType<typeof vi.fn>;
+
+function makeGetReq(url: string): NextRequest {
+  return new Request(url) as unknown as NextRequest;
+}
+
+describe("GET /api/tournaments", () => {
+  beforeEach(() => {
+    findMany.mockReset();
+    requireUserMock.mockResolvedValue({ id: "user_1", role: "ORGANIZER" });
+  });
+
+  it("scopes to the owner and applies status filter", async () => {
+    findMany.mockResolvedValue([
+      {
+        id: "t_1",
+        name: "Cup",
+        gameTitle: "SF6",
+        status: "ACTIVE",
+        entryFee: 10n,
+        asset: "XLM",
+        _count: { participants: 3 },
+      },
+    ]);
+    const res = await GET(makeGetReq("http://localhost/api/tournaments?status=ACTIVE&take=20"));
+    const json = await res.json();
+    expect(json.ok).toBe(true);
+    expect(findMany.mock.calls[0]![0].where).toMatchObject({
+      organizerId: "user_1",
+      status: "ACTIVE",
+    });
+    expect(json.data.items[0].entryFee).toBe("10"); // BigInt serialized to string
+    expect(json.data.items[0].participantCount).toBe(3);
+  });
+
+  it("excludes another owner's tournaments (IDOR check)", async () => {
+    findMany.mockResolvedValue([]);
+    requireUserMock.mockResolvedValue({ id: "user_2", role: "ORGANIZER" });
+
+    const res = await GET(makeGetReq("http://localhost/api/tournaments?take=20"));
+    const json = await res.json();
+
+    expect(json.ok).toBe(true);
+    // The where clause must scope to user_2, not user_1
+    expect(findMany.mock.calls[0]![0].where).toMatchObject({ organizerId: "user_2" });
+    expect(json.data.items).toHaveLength(0);
+  });
+
+  it("returns nextCursor when more rows exist", async () => {
+    // Request take=2, return 3 rows → hasMore=true, nextCursor = 3rd item id
+    const rows = [
+      {
+        id: "t_1",
+        name: "A",
+        gameTitle: "G",
+        status: "ACTIVE",
+        entryFee: 5n,
+        asset: "XLM",
+        _count: { participants: 1 },
+      },
+      {
+        id: "t_2",
+        name: "B",
+        gameTitle: "G",
+        status: "ACTIVE",
+        entryFee: 5n,
+        asset: "XLM",
+        _count: { participants: 2 },
+      },
+      {
+        id: "t_3",
+        name: "C",
+        gameTitle: "G",
+        status: "ACTIVE",
+        entryFee: 5n,
+        asset: "XLM",
+        _count: { participants: 0 },
+      },
+    ];
+    findMany.mockResolvedValue(rows);
+
+    const res = await GET(makeGetReq("http://localhost/api/tournaments?take=2"));
+    const json = await res.json();
+
+    expect(json.ok).toBe(true);
+    expect(json.data.items).toHaveLength(2);
+    expect(json.data.nextCursor).toBe("t_3");
+  });
+
+  it("returns null nextCursor when no more rows", async () => {
+    findMany.mockResolvedValue([
+      {
+        id: "t_1",
+        name: "A",
+        gameTitle: "G",
+        status: "DRAFT",
+        entryFee: 5n,
+        asset: "XLM",
+        _count: { participants: 0 },
+      },
+    ]);
+
+    const res = await GET(makeGetReq("http://localhost/api/tournaments?take=20"));
+    const json = await res.json();
+
+    expect(json.ok).toBe(true);
+    expect(json.data.nextCursor).toBeNull();
+  });
+
+  it("computes pool = participantCount * entryFee as string", async () => {
+    findMany.mockResolvedValue([
+      {
+        id: "t_1",
+        name: "Cup",
+        gameTitle: "G",
+        status: "ACTIVE",
+        entryFee: 1000000n,
+        asset: "XLM",
+        _count: { participants: 4 },
+      },
+    ]);
+
+    const res = await GET(makeGetReq("http://localhost/api/tournaments?take=20"));
+    const json = await res.json();
+
+    expect(json.ok).toBe(true);
+    expect(json.data.items[0].pool).toBe("4000000");
+    expect(typeof json.data.items[0].pool).toBe("string");
+    expect(typeof json.data.items[0].entryFee).toBe("string");
+  });
+
+  it("passes cursor to prisma for pagination", async () => {
+    findMany.mockResolvedValue([]);
+    const res = await GET(makeGetReq("http://localhost/api/tournaments?take=10&cursor=t_5"));
+    const json = await res.json();
+
+    expect(json.ok).toBe(true);
+    const call = findMany.mock.calls[0]![0];
+    expect(call.cursor).toEqual({ id: "t_5" });
+    expect(call.skip).toBe(1);
+  });
+
+  it("returns 403 for wrong-role via AuthError", async () => {
+    requireUserMock.mockRejectedValue(new AuthError("Forbidden", 403));
+
+    const res = await GET(makeGetReq("http://localhost/api/tournaments"));
+    const json = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(json.ok).toBe(false);
+  });
+
+  it("re-throws NEXT_REDIRECT for unauthenticated", async () => {
+    const redirectError = Object.assign(new Error("NEXT_REDIRECT"), {
+      digest: "NEXT_REDIRECT",
+    });
+    requireUserMock.mockRejectedValue(redirectError);
+
+    await expect(GET(makeGetReq("http://localhost/api/tournaments"))).rejects.toThrow(
+      "NEXT_REDIRECT",
+    );
+  });
+
+  it("returns 400 for invalid take param", async () => {
+    const res = await GET(makeGetReq("http://localhost/api/tournaments?take=99"));
+    const json = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(json.ok).toBe(false);
+  });
+});

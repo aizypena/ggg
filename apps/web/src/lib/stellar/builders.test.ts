@@ -1,3 +1,6 @@
+// @vitest-environment node
+// Pure Stellar XDR-builder logic with no DOM; runs in node so Keypair.random()
+// gets a real WebCrypto seed (jsdom's crypto yields the wrong seed type).
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Keypair } from "@stellar/stellar-sdk";
 

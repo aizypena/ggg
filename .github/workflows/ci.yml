@@ -92,7 +92,7 @@ jobs:
   contract:
     runs-on: ubuntu-latest
     env:
-      STELLAR_CLI_VERSION: "22.0.0"
+      STELLAR_CLI_VERSION: "27.0.0"
     steps:
       - uses: actions/checkout@v5
 

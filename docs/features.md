@@ -62,3 +62,9 @@ Stood up the standalone `apps/subscriber` worker that ingests on-chain activity 
 - `useTournamentEvents` EventSource hook with auto-reconnect; `<PrizePoolCounter>` ticks up off the stream (key-driven `pool-pop` keyframe, reduced-motion aware) and `<LiveFeed>` renders a human-readable gloss ticker (reduced-motion aware).
 
 End-to-end live-propagation verification (P5.12) is documented as manual steps in the plan/PR — it requires the docker-compose Postgres+Redis stack plus Testnet RPC/Horizon and on-chain transactions, which the CI/sandbox environment does not provide.
+
+## Phase 6 — Hardening & Ship
+
+Wrapping the Phase 0–5 app in test, CI, security, and deployment layers (no new product features).
+
+- **Security headers (P6.4):** hardened the shared `buildSecurityHeaders()` source of truth (consumed by both `next.config.ts` `headers()` and the auth middleware) — CSP now allows the Stellar.Expert explorer origin (a distinct domain from the `*.stellar.org` RPC/Horizon wildcard) and the S3/MinIO image origin (`S3_PUBLIC_ORIGIN`), and adds `object-src 'none'` and `upgrade-insecure-requests`. Strengthened the unit test to assert the exact HSTS/Referrer/X-Frame/X-Content-Type/Permissions-Policy values and every locked-down CSP directive.

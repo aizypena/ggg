@@ -62,3 +62,9 @@ Stood up the standalone `apps/subscriber` worker that ingests on-chain activity 
 - `useTournamentEvents` EventSource hook with auto-reconnect; `<PrizePoolCounter>` ticks up off the stream (key-driven `pool-pop` keyframe, reduced-motion aware) and `<LiveFeed>` renders a human-readable gloss ticker (reduced-motion aware).
 
 End-to-end live-propagation verification (P5.12) is documented as manual steps in the plan/PR — it requires the docker-compose Postgres+Redis stack plus Testnet RPC/Horizon and on-chain transactions, which the CI/sandbox environment does not provide.
+
+## Phase 6 — Hardening & Ship
+
+Wrapping the Phase 0–5 app in test, CI, security, and deployment layers (no new product features).
+
+- **Playwright harness + Freighter wallet fixture (P6.1):** added `apps/web/playwright.config.ts` (Testnet baseURL, 120s timeout matching the §15 criterion, single Chromium project, web-server boot, global-setup hook), `e2e/global-setup.ts` (funds organizer/referee/3-player keypairs via Friendbot once, persists to `.e2e/keys.json`), `e2e/fixtures/wallet.ts` (injects a `window.freighterApi`-shaped shim via `addInitScript`, signing delegated to a Node `exposeFunction` over a real Testnet `Keypair` — the documented headless-extension seam; the signer is bound once per context so multi-role tests don't double-register), and `e2e/fixtures/auth.ts` (register+login through the real API). Added the `@playwright/test` dev dep + `e2e` script; excluded `e2e/` from the web typecheck/lint (Playwright has its own transform) and gitignored Playwright artifacts + the funded keypairs.

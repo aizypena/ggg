@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "next-auth/middleware";
 import { buildSecurityHeaders } from "@/lib/security-headers";
+import { env } from "@/lib/env";
 
 export function isProtectedPath(pathname: string): boolean {
   // /tournaments/[id] is public-read; everything else under /tournaments is protected
@@ -26,6 +27,16 @@ export default withAuth(
     return response;
   },
   {
+    // withAuth verifies the session JWT and needs the SAME secret the NextAuth
+    // handler signs with (authOptions.secret = env.SESSION_SECRET). Without it,
+    // withAuth falls back to NEXTAUTH_SECRET (never set) and every protected
+    // route 500s with "there is a problem with the server configuration".
+    secret: env.SESSION_SECRET,
+    // getToken defaults to the `next-auth.session-token` cookie, but the handler
+    // issues a custom `ggg.session` cookie (authOptions.cookies). Without this
+    // override withAuth never finds the token and redirects every authed user to
+    // /login.
+    cookies: { sessionToken: { name: "ggg.session" } },
     callbacks: {
       authorized({ token, req }) {
         // Public paths are always allowed

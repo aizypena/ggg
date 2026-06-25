@@ -98,6 +98,7 @@ model ContractEvent {
   payload      Json
   createdAt    DateTime   @default(now())
 
+  @@unique([txHash, type], name: "txHash_type")
   @@index([tournamentId, createdAt])
 }
 

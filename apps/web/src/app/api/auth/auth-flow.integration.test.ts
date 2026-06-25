@@ -11,7 +11,10 @@ function makeUniqueUser(): string {
   return `${INTEGRATION_USER_PREFIX}${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function buildRegisterRequest(body: unknown, opts?: { origin?: string; host?: string; xForwardedFor?: string }): Request {
+function buildRegisterRequest(
+  body: unknown,
+  opts?: { origin?: string; host?: string; xForwardedFor?: string },
+): Request {
   const headers = new Headers();
   headers.set("content-type", "application/json");
   if (opts?.origin) headers.set("origin", opts.origin);
@@ -43,7 +46,10 @@ describe("auth-flow integration", () => {
   it("register persists an ORGANIZER in Postgres with argon2id hash", async () => {
     const username = makeUniqueUser();
     const password = "SecureP@ssw0rd123";
-    const req = buildRegisterRequest({ username, password }, { origin: "http://localhost:3000", host: "localhost:3000" });
+    const req = buildRegisterRequest(
+      { username, password },
+      { origin: "http://localhost:3000", host: "localhost:3000" },
+    );
     const res = await registerPost(req);
     expect(res.status).toBe(201);
     const json = (await res.json()) as { ok: true; data: { id: string; username: string } };
@@ -59,7 +65,10 @@ describe("auth-flow integration", () => {
   it("authorizeCredentials accepts correct password and rejects wrong password and non-existent user", async () => {
     const username = makeUniqueUser();
     const password = "CorrectHorseBatteryStaple!1";
-    const req = buildRegisterRequest({ username, password }, { origin: "http://localhost:3000", host: "localhost:3000" });
+    const req = buildRegisterRequest(
+      { username, password },
+      { origin: "http://localhost:3000", host: "localhost:3000" },
+    );
     await registerPost(req);
 
     const ok = await authorizeCredentials({ username, password });
@@ -70,7 +79,10 @@ describe("auth-flow integration", () => {
     const wrong = await authorizeCredentials({ username, password: "wrongpassword123" });
     expect(wrong).toBeNull();
 
-    const missing = await authorizeCredentials({ username: "definitely_not_a_real_user_12345", password: "irrelevant" });
+    const missing = await authorizeCredentials({
+      username: "definitely_not_a_real_user_12345",
+      password: "irrelevant",
+    });
     expect(missing).toBeNull();
   });
 
@@ -90,11 +102,17 @@ describe("auth-flow integration", () => {
   it("duplicate registration returns generic 409", async () => {
     const username = makeUniqueUser();
     const password = "SecureP@ssw0rd123";
-    const req1 = buildRegisterRequest({ username, password }, { origin: "http://localhost:3000", host: "localhost:3000" });
+    const req1 = buildRegisterRequest(
+      { username, password },
+      { origin: "http://localhost:3000", host: "localhost:3000" },
+    );
     const res1 = await registerPost(req1);
     expect(res1.status).toBe(201);
 
-    const req2 = buildRegisterRequest({ username, password: "DifferentP@ssw0rd123" }, { origin: "http://localhost:3000", host: "localhost:3000" });
+    const req2 = buildRegisterRequest(
+      { username, password: "DifferentP@ssw0rd123" },
+      { origin: "http://localhost:3000", host: "localhost:3000" },
+    );
     const res2 = await registerPost(req2);
     expect(res2.status).toBe(409);
     const json = (await res2.json()) as { ok: false; error: { code: string; message: string } };
@@ -109,12 +127,18 @@ describe("auth-flow integration", () => {
 
     for (let i = 0; i < 5; i++) {
       const u = `${username}_${i}`;
-      const req = buildRegisterRequest({ username: u, password }, { origin: "http://localhost:3000", host: "localhost:3000", xForwardedFor: ip });
+      const req = buildRegisterRequest(
+        { username: u, password },
+        { origin: "http://localhost:3000", host: "localhost:3000", xForwardedFor: ip },
+      );
       const res = await registerPost(req);
       expect(res.status).toBe(201);
     }
 
-    const blockedReq = buildRegisterRequest({ username: `${username}_blocked`, password }, { origin: "http://localhost:3000", host: "localhost:3000", xForwardedFor: ip });
+    const blockedReq = buildRegisterRequest(
+      { username: `${username}_blocked`, password },
+      { origin: "http://localhost:3000", host: "localhost:3000", xForwardedFor: ip },
+    );
     const blockedRes = await registerPost(blockedReq);
     expect(blockedRes.status).toBe(429);
     const json = (await blockedRes.json()) as { ok: false; error: { code: string } };
@@ -125,7 +149,10 @@ describe("auth-flow integration", () => {
   it("cross-origin register returns 403 (CSRF)", async () => {
     const username = makeUniqueUser();
     const password = "SecureP@ssw0rd123";
-    const req = buildRegisterRequest({ username, password }, { origin: "http://evil.com", host: "localhost:3000" });
+    const req = buildRegisterRequest(
+      { username, password },
+      { origin: "http://evil.com", host: "localhost:3000" },
+    );
     const res = await registerPost(req);
     expect(res.status).toBe(403);
     const json = (await res.json()) as { ok: false; error: { code: string } };

@@ -41,6 +41,6 @@ apps/web/.e2e/
 apps/web/playwright-report/
 apps/web/test-results/
 
-# P5.12 live-propagation verification (local, disposable)
+# Local verification artifacts (disposable)
 .env.verify
 .verify-compose.yml

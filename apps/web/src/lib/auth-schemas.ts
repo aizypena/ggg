@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { passwordSchema } from "@/lib/password";
+import { passwordSchema } from "@/lib/password-schema";
 
 export const credentialsSchema = z.object({
   username: z

@@ -45,7 +45,35 @@ function getHorizonServer(): Horizon.Server {
   return horizonServer;
 }
 
+// Soroban RPC only retains a recent window of ledgers and rejects an out-of-range
+// startLedger with -32600 "startLedger must be within the ledger range: <min> - <max>".
+// Two cases, both expected during normal operation:
+//   • startLedger < min — a fresh cursor (=1) for a just-deployed contract; clamp
+//     to <min> and retry (the contract's events live inside the retained window).
+//   • startLedger > max — we poll faster than ledgers close, so the cursor
+//     (latestLedger+1) briefly sits past the newest ledger; there are simply no
+//     new events yet, so return empty and let the next tick catch up.
 export async function getEvents(contractId: string, startLedger: number): Promise<DecodedEvents> {
+  try {
+    return await fetchEvents(contractId, startLedger);
+  } catch (err) {
+    // The RPC rejection is a plain { code, message } object, not an Error.
+    const msg =
+      typeof err === "object" && err !== null && "message" in err
+        ? String((err as { message: unknown }).message)
+        : String(err);
+    const m = /ledger range:\s*(\d+)\s*-\s*(\d+)/.exec(msg);
+    if (m) {
+      const min = Number(m[1]);
+      const max = Number(m[2]);
+      if (startLedger < min) return await fetchEvents(contractId, min);
+      if (startLedger > max) return { latestLedger: max, events: [] };
+    }
+    throw err;
+  }
+}
+
+async function fetchEvents(contractId: string, startLedger: number): Promise<DecodedEvents> {
   const res = await getRpcServer().getEvents({
     startLedger,
     filters: [{ type: "contract", contractIds: [contractId] }],
@@ -82,7 +110,23 @@ export async function getContractPayments(
 ): Promise<{ payments: (DecodedPayment & { memo: string | null })[]; nextCursor: string | null }> {
   let builder = getHorizonServer().payments().forAccount(contractAddr).order("asc").limit(50);
   if (hzCursor) builder = builder.cursor(hzCursor);
-  const page = await builder.call();
+  let page;
+  try {
+    page = await builder.call();
+  } catch (err) {
+    // A `C…` contract address has no classic Horizon account/payment history, so
+    // `/accounts/{C…}/payments` returns 400/404. That just means there are no
+    // SEP-7 classic-payment deposits to reconcile — not a fatal poll error.
+    const status =
+      typeof err === "object" && err !== null
+        ? ((err as { response?: { status?: number }; status?: number }).response?.status ??
+          (err as { status?: number }).status)
+        : undefined;
+    if (status === 400 || status === 404 || /Bad Request|Not Found/i.test(String(err))) {
+      return { payments: [], nextCursor: hzCursor };
+    }
+    throw err;
+  }
   const out: (DecodedPayment & { memo: string | null })[] = [];
   let nextCursor = hzCursor;
   for (const record of page.records) {

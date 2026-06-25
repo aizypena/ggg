@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 export interface LiveEvent {
   type: "REGISTERED" | "FINALIZED" | "CANCELLED";
@@ -15,32 +15,34 @@ export interface LiveEvent {
  */
 export function useTournamentEvents(tournamentId: string): { events: LiveEvent[] } {
   const [events, setEvents] = useState<LiveEvent[]>([]);
-  const esRef = useRef<EventSource | null>(null);
-  const retry = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const connect = useCallback(() => {
-    const es = new EventSource(`/api/tournaments/${tournamentId}/events`);
-    esRef.current = es;
-    es.onmessage = (e: MessageEvent) => {
-      try {
-        setEvents((prev) => [...prev, JSON.parse(e.data) as LiveEvent]);
-      } catch {
-        /* ignore malformed frame */
-      }
-    };
-    es.onerror = () => {
-      es.close();
-      retry.current = setTimeout(connect, 3000);
-    };
-  }, [tournamentId]);
 
   useEffect(() => {
+    let es: EventSource | null = null;
+    let retry: ReturnType<typeof setTimeout> | null = null;
+    let closed = false;
+
+    function connect(): void {
+      es = new EventSource(`/api/tournaments/${tournamentId}/events`);
+      es.onmessage = (e: MessageEvent) => {
+        try {
+          setEvents((prev) => [...prev, JSON.parse(e.data) as LiveEvent]);
+        } catch {
+          /* ignore malformed frame */
+        }
+      };
+      es.onerror = () => {
+        es?.close();
+        if (!closed) retry = setTimeout(connect, 3000);
+      };
+    }
+
     connect();
     return () => {
-      esRef.current?.close();
-      if (retry.current) clearTimeout(retry.current);
+      closed = true;
+      es?.close();
+      if (retry) clearTimeout(retry);
     };
-  }, [connect]);
+  }, [tournamentId]);
 
   return { events };
 }

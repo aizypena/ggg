@@ -4,8 +4,8 @@ const store = new Map<string, { contractId: string; ledger: number; hzCursor: st
 vi.mock("./db", () => ({
   prisma: {
     subscriberCursor: {
-      findUnique: vi.fn(async ({ where }: { where: { contractId: string } }) =>
-        store.get(where.contractId) ?? null,
+      findUnique: vi.fn(
+        async ({ where }: { where: { contractId: string } }) => store.get(where.contractId) ?? null,
       ),
       upsert: vi.fn(
         async ({

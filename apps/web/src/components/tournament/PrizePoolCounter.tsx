@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useMemo } from "react";
 import { useTournamentEvents } from "@/hooks/use-tournament-events";
 
 /** Convert a stroop string to human-readable decimal (7 decimal places). */
@@ -8,20 +8,13 @@ function fmt(stroops: string) {
   return `${n / 10_000_000n}.${(n % 10_000_000n).toString().padStart(7, "0")}`;
 }
 
-function prefersReducedMotion(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
-}
-
 /**
  * Live prize-pool counter. Seeds from the server snapshot (initialPool /
- * participantCount) then ticks up off the SSE stream: every confirmed
- * REGISTERED event advances the pool to its `poolAfter` (or, for SEP-7 deposits
- * with no poolAfter, by one entry fee). On an increase it pops scale(1.05)
- * unless the viewer prefers reduced motion (BRAND §6).
+ * participantCount) then derives the live total off the SSE stream: every
+ * confirmed REGISTERED event advances the pool to its `poolAfter` (or, for SEP-7
+ * deposits with no poolAfter, by one entry fee). Each advance bumps a key that
+ * replays the `pool-pop` scale animation — `motion-safe:` disables it under
+ * prefers-reduced-motion (BRAND §6).
  */
 export function PrizePoolCounter({
   tournamentId,
@@ -37,43 +30,36 @@ export function PrizePoolCounter({
   entryFee: string;
 }) {
   const { events } = useTournamentEvents(tournamentId);
-  const [pool, setPool] = useState<bigint>(BigInt(initialPool));
-  const [count, setCount] = useState(participantCount);
-  const [pop, setPop] = useState(false);
-  const seen = useRef(0);
 
-  useEffect(() => {
-    let next = pool;
-    let added = 0;
-    for (let i = seen.current; i < events.length; i++) {
-      const ev = events[i]!;
+  // Pool + count are derived state — computed during render, not stored.
+  // `bumps` counts pool-increasing events so its change can retrigger the pop.
+  const { pool, count, bumps } = useMemo(() => {
+    let p = BigInt(initialPool);
+    let c = participantCount;
+    let b = 0;
+    for (const ev of events) {
       if (ev.type !== "REGISTERED") continue;
-      added += 1;
+      c += 1;
       const after = ev.data.poolAfter;
-      next = typeof after === "string" ? BigInt(after) : next + BigInt(entryFee);
+      const next = typeof after === "string" ? BigInt(after) : p + BigInt(entryFee);
+      if (next > p) b += 1;
+      p = next;
     }
-    seen.current = events.length;
-    if (added > 0) setCount((c) => c + added);
-    if (next > pool) {
-      setPool(next);
-      if (!prefersReducedMotion()) {
-        setPop(true);
-        setTimeout(() => setPop(false), 200);
-      }
-    }
-  }, [events, entryFee, pool]);
+    return { pool: p, count: c, bumps: b };
+  }, [events, initialPool, participantCount, entryFee]);
 
   return (
     <div className="high-contrast-card acid-glow rounded-none p-8">
       <p className="label-caps text-on-surface-variant">Prize pool</p>
       <p className="mt-2 flex items-end gap-3">
-        {/* aria-live="polite" so screen readers announce updates */}
+        {/* aria-live="polite" so screen readers announce updates. The key bumps
+            on each increase, remounting the span to replay the pop animation. */}
         <span
+          key={bumps}
           data-testid="pool-amount"
           aria-live="polite"
           aria-atomic="true"
-          className="data-mono text-[96px] font-extrabold leading-none text-acid-yellow motion-safe:transition-transform"
-          style={{ transform: pop ? "scale(1.05)" : "scale(1)" }}
+          className="data-mono text-[96px] font-extrabold leading-none text-acid-yellow motion-safe:animate-pool-pop"
         >
           {fmt(pool.toString())}
         </span>

@@ -21,7 +21,11 @@ const tournament = { id: "t1", contractId: "CABC" };
 beforeEach(() => {
   getContractPayments.mockReset();
   applyEvent.mockReset();
-  applyEvent.mockImplementation(async (_t, e) => ({ type: e.type, txHash: e.txHash, data: e.data }));
+  applyEvent.mockImplementation(async (_t, e) => ({
+    type: e.type,
+    txHash: e.txHash,
+    data: e.data,
+  }));
 });
 
 describe("reconcileSep7Deposits", () => {

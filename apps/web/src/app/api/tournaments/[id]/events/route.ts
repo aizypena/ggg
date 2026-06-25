@@ -21,9 +21,7 @@ export async function GET(
       orderBy: { createdAt: "desc" },
       take: 50,
     });
-    return ok(
-      rows.reverse().map((ev) => ({ type: ev.type, txHash: ev.txHash, data: ev.payload })),
-    );
+    return ok(rows.reverse().map((ev) => ({ type: ev.type, txHash: ev.txHash, data: ev.payload })));
   }
 
   // Dedicated connection for pub/sub (a subscribed ioredis client can't run

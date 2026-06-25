@@ -28,12 +28,10 @@ const txClient = {
     }),
   },
   participant: {
-    upsert: vi.fn(
-      async ({ create }: { create: (typeof participants)[number] }) => {
-        participants.push(create);
-        return create;
-      },
-    ),
+    upsert: vi.fn(async ({ create }: { create: (typeof participants)[number] }) => {
+      participants.push(create);
+      return create;
+    }),
   },
   payout: {
     create: vi.fn(async ({ data }: { data: (typeof payouts)[number] }) => {

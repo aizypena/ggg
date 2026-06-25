@@ -10,6 +10,7 @@ import { ParticipantList } from "@/components/tournament/ParticipantList";
 import { LiveFeed } from "@/components/tournament/LiveFeed";
 import { RefereePanel } from "@/components/tournament/RefereePanel";
 import { WinnersPanel } from "@/components/tournament/WinnersPanel";
+import { RefundList } from "@/components/tournament/RefundList";
 import { CancelButton } from "@/components/tournament/CancelButton";
 
 export default async function TournamentDetailPage({
@@ -56,6 +57,7 @@ export default async function TournamentDetailPage({
                 href={t.contractUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                data-testid="explorer-link"
                 className="label-caps text-electric-violet underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-acid-yellow"
                 aria-label="View contract on Stellar explorer"
               >
@@ -78,6 +80,7 @@ export default async function TournamentDetailPage({
           <p id="cancelled-heading" className="label-caps text-error" role="alert">
             This tournament has been cancelled. All participants have been refunded.
           </p>
+          <RefundList participants={t.participants} entryFee={t.entryFee} asset={t.asset} />
         </section>
       )}
 

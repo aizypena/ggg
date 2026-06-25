@@ -20,7 +20,11 @@ export function WinnersPanel({ winners, asset }: { winners: Winner[]; asset: "XL
       <p className="label-caps italic text-acid-yellow">Settlement Complete</p>
       <ul className="mt-4 flex flex-col gap-3" aria-label="Tournament winners">
         {winners.map((w) => (
-          <li key={w.rank} className="flex items-center justify-between gap-4">
+          <li
+            key={w.rank}
+            data-testid="payout-row"
+            className="flex items-center justify-between gap-4"
+          >
             <span className="flex items-center gap-3">
               <span
                 className="material-symbols-outlined text-acid-yellow"
@@ -41,6 +45,7 @@ export function WinnersPanel({ winners, asset }: { winners: Winner[]; asset: "XL
                   href={w.explorerUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  data-testid="explorer-link"
                   className="label-caps text-electric-violet underline"
                   aria-label={`View rank ${w.rank} transaction on explorer`}
                 >

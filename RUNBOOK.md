@@ -134,19 +134,22 @@ run and writes `.e2e/keys.json` (gitignored — Testnet secrets).
 
 Run against the deployed Testnet (`APP_URL=<railway web url>`). The demo-path and
 cancel-refund specs (#83/#84) automate criteria 1–6; cross-check the explorer
-links manually.
+links manually. The detailed per-criterion checklist lives in
+[`docs/acceptance-spec-15.md`](docs/acceptance-spec-15.md).
 
 | # | Criterion | Command / check | Expected | Outcome |
 |---|---|---|---|---|
-| 1 | Create → contract + QR | `playwright test e2e/demo-path.spec.ts` | status ACTIVE, `C…` contract id, QR rendered | _record_ |
-| 2 | Multiple joins update live | same run (3 `participant-row`, pool ticks to 30 XLM via SSE) | real-time participant + pool updates | _record_ |
-| 3 | Finalize pays 60/30/10 | same run (3 `payout-row`: 18 / 9 / 3 XLM from one finalisation) | one finalize tx, three transfers (dust to 1st) | _record_ |
-| 4 | Three explorer links | same run (`explorer-link` hrefs match `stellar.expert/explorer/testnet/tx/<64hex>`) | three valid, clickable tx links | _record_ |
-| 5 | Cancel refunds all + CANCELLED | `playwright test e2e/cancel-refund.spec.ts` | status chip CANCELLED, one `refund-row` per player | _record_ |
-| 6 | Happy path < 2 min | demo-path asserts `Date.now() - started < 120_000`; also stopwatch one manual run | well under 120s | _record_ |
+| 1 | Create → contract + QR | `playwright test e2e/demo-path.spec.ts` | status ACTIVE, `C…` contract id, QR rendered | ⏳ pending live deploy (#88) |
+| 2 | Multiple joins update live | same run (3 `participant-row`, pool ticks to 30 XLM via SSE) | real-time participant + pool updates | ⏳ pending live deploy (#88) |
+| 3 | Finalize pays 60/30/10 | same run (3 `payout-row`: 18 / 9 / 3 XLM from one finalisation) | one finalize tx, three transfers (dust to 1st) | ⏳ pending live deploy (#88) |
+| 4 | Three explorer links | same run (`explorer-link` hrefs match `stellar.expert/explorer/testnet/tx/<64hex>`) | three valid, clickable tx links | ⏳ pending live deploy (#88) |
+| 5 | Cancel refunds all + CANCELLED | `playwright test e2e/cancel-refund.spec.ts` | status chip CANCELLED, one `refund-row` per player | ⏳ pending live deploy (#88) |
+| 6 | Happy path < 2 min | demo-path runs within Playwright's 120s `timeout`; also stopwatch one manual run | well under 120s | ⏳ pending live deploy (#88) |
 
 Paste each pass/fail, elapsed time, and a sample explorer URL into the Outcome
-column once verified on the deployed environment.
+column once verified on the deployed environment. **Verified locally so far:** the
+NextAuth login seam and every `data-testid` the specs query (see
+`docs/acceptance-spec-15.md` → "verified locally"); only the on-chain run remains.
 
 ## 9. Rollback
 

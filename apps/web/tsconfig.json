@@ -12,5 +12,6 @@
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   // contract-client is generated Soroban TS bindings — a self-contained package
   // with its own tsconfig/build and deps; the web app must not typecheck its source.
-  "exclude": ["node_modules", "src/contract-client"]
+  // e2e is Playwright-only (its own transform + types); excluded from the app typecheck.
+  "exclude": ["node_modules", "src/contract-client", "e2e", "playwright.config.ts"]
 }

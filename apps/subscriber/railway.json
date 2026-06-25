@@ -1,0 +1,11 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "pnpm install --frozen-lockfile && pnpm --filter web db:generate"
+  },
+  "deploy": {
+    "startCommand": "pnpm --filter subscriber start",
+    "restartPolicyType": "ALWAYS"
+  }
+}

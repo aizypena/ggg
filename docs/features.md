@@ -62,3 +62,9 @@ Stood up the standalone `apps/subscriber` worker that ingests on-chain activity 
 - `useTournamentEvents` EventSource hook with auto-reconnect; `<PrizePoolCounter>` ticks up off the stream (key-driven `pool-pop` keyframe, reduced-motion aware) and `<LiveFeed>` renders a human-readable gloss ticker (reduced-motion aware).
 
 End-to-end live-propagation verification (P5.12) is documented as manual steps in the plan/PR — it requires the docker-compose Postgres+Redis stack plus Testnet RPC/Horizon and on-chain transactions, which the CI/sandbox environment does not provide.
+
+## Phase 6 — Hardening & Ship
+
+Wrapping the Phase 0–5 app in test, CI, security, and deployment layers (no new product features).
+
+- **Railway deploy config (P6.7):** added Railway service configs for the three monorepo services. `apps/web/railway.json` (NIXPACKS) builds with `db:generate && next build`, starts `next start`, and runs `prisma migrate deploy && prisma db seed` as the `preDeployCommand` release hook with a `/api/auth/me` healthcheck. `apps/subscriber/railway.json` builds only `db:generate` (the worker runs via `tsx`, no compile step) and runs `pnpm --filter subscriber start` with `restartPolicyType: ALWAYS`. `infra/file-storage/{Dockerfile,railway.json}` ship a MinIO image (DOCKERFILE builder) for the S3-compatible store backed by a Railway Volume at `/data`. Provisioning + per-env variables are documented in RUNBOOK (#90); the configs are committed but the actual Railway provisioning/`railway up` requires a Railway account and is not run from the sandbox.

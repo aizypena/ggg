@@ -62,3 +62,9 @@ Stood up the standalone `apps/subscriber` worker that ingests on-chain activity 
 - `useTournamentEvents` EventSource hook with auto-reconnect; `<PrizePoolCounter>` ticks up off the stream (key-driven `pool-pop` keyframe, reduced-motion aware) and `<LiveFeed>` renders a human-readable gloss ticker (reduced-motion aware).
 
 End-to-end live-propagation verification (P5.12) is documented as manual steps in the plan/PR — it requires the docker-compose Postgres+Redis stack plus Testnet RPC/Horizon and on-chain transactions, which the CI/sandbox environment does not provide.
+
+## Phase 6 — Hardening & Ship
+
+Wrapping the Phase 0–5 app in test, CI, security, and deployment layers (no new product features).
+
+- **RUNBOOK.md (P6.9):** added the deploy + acceptance runbook — prerequisites, data-plugin provisioning (Postgres 17 + Redis), the three-service deploy table (web release hook = `prisma migrate deploy && db seed`; subscriber `tsx`; file-storage MinIO + Volume), the Testnet-vs-Public per-env variable matrix, admin-password rotation, the CI gate description + the one-time branch-protection command, the Freighter-stub E2E fixture rationale, the six §15 acceptance criteria table (command + expected + outcome slot), and the forward-only rollback procedure. Contains only env-var references, no secret values.

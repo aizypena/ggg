@@ -68,6 +68,7 @@
   --animate-glow-pulse-acid: glow-pulse-acid 1.5s ease-in-out infinite alternate;
   --animate-pulse-live: pulse-live 2s ease-in-out infinite;
   --animate-ticker-scroll: ticker-scroll 30s linear infinite;
+  --animate-pool-pop: pool-pop 0.2s ease-out;
 }
 
 /* ── Base ──────────────────────────────────────────────────────────── */
@@ -184,6 +185,18 @@ body {
   }
   to {
     transform: translateY(-50%);
+  }
+}
+
+@keyframes pool-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 

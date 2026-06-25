@@ -98,5 +98,13 @@ model ContractEvent {
   payload      Json
   createdAt    DateTime   @default(now())
 
+  @@unique([txHash, type], name: "txHash_type")
   @@index([tournamentId, createdAt])
+}
+
+model SubscriberCursor {
+  contractId String   @id // C... contract address
+  ledger     Int // last fully-processed Soroban ledger
+  hzCursor   String? // last Horizon payments paging_token
+  updatedAt  DateTime @updatedAt
 }

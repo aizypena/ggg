@@ -1,49 +1,29 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useTournamentEvents, type LiveEvent } from "@/hooks/use-tournament-events";
 
-type FeedEntry = { id: string; text: string };
+const trunc = (a: string): string => (a.length > 10 ? `${a.slice(0, 6)}…${a.slice(-4)}` : a);
 
-/**
- * Fetches recent participant activity from the REST endpoint.
- * POLLING PLACEHOLDER — Phase 5 swaps this seam for SSE GET /api/tournaments/[id]/events.
- * To migrate: remove the setInterval below and subscribe to the SSE stream instead.
- */
-async function fetchActivity(tournamentId: string): Promise<FeedEntry[] | null> {
-  const r = await fetch(`/api/tournaments/${tournamentId}`).then((x) => x.json());
-  if (r.ok) {
-    return (r.data.participants as { playerAddr: string }[]).map((p) => ({
-      id: p.playerAddr,
-      text: `${p.playerAddr.slice(0, 6)}… joined`,
-    }));
+/** Human-readable gloss for a confirmed on-chain event (BRAND §8). */
+function gloss(ev: LiveEvent): string {
+  if (ev.type === "REGISTERED") {
+    return `${trunc(String(ev.data.player))} joined`;
   }
-  return null;
+  if (ev.type === "FINALIZED") {
+    return `Payouts sent: 1st → ${trunc(String(ev.data.first))}, 2nd → ${trunc(
+      String(ev.data.second),
+    )}, 3rd → ${trunc(String(ev.data.third))}`;
+  }
+  return `Tournament cancelled — ${String(ev.data.refundedCount)} players refunded`;
 }
 
-export function LiveFeed({
-  tournamentId,
-  pollMs = 5000,
-}: {
-  tournamentId: string;
-  pollMs?: number;
-}) {
-  const [entries, setEntries] = useState<FeedEntry[]>([]);
-
-  // POLLING PLACEHOLDER — Phase 5 replaces setInterval with SSE subscription.
-  useEffect(() => {
-    let active = true;
-    const id = setInterval(async () => {
-      try {
-        const data = await fetchActivity(tournamentId);
-        if (data && active) setEntries(data);
-      } catch {
-        // Keep showing the last good value on network failure.
-      }
-    }, pollMs);
-    return () => {
-      active = false;
-      clearInterval(id);
-    };
-  }, [tournamentId, pollMs]);
+/**
+ * Live registration/finalisation ticker. Subscribes to the tournament SSE
+ * stream and renders each confirmed event with a human-readable gloss. The
+ * ticker scroll is motion-safe only (BRAND §6) so it stops under
+ * prefers-reduced-motion.
+ */
+export function LiveFeed({ tournamentId }: { tournamentId: string }) {
+  const { events } = useTournamentEvents(tournamentId);
 
   return (
     <section className="kinetic-glass rounded-2xl p-6">
@@ -65,12 +45,12 @@ export function LiveFeed({
         className="mt-4 max-h-80 overflow-hidden"
       >
         <ul className="motion-safe:animate-[ticker-scroll_30s_linear_infinite] motion-reduce:animate-none">
-          {entries.length === 0 ? (
+          {events.length === 0 ? (
             <li className="data-mono text-on-surface-variant">Waiting for on-chain activity…</li>
           ) : (
-            entries.map((e) => (
-              <li key={e.id} className="data-mono py-1 text-on-surface">
-                {e.text}
+            events.map((ev, i) => (
+              <li key={`${ev.txHash ?? "ev"}-${i}`} className="data-mono py-1 text-on-surface">
+                {gloss(ev)}
               </li>
             ))
           )}

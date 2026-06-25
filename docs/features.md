@@ -47,3 +47,18 @@ Built the server-side Stellar integration module (`apps/web/src/lib/stellar/`) t
 - Gated Testnet integration test (`RUN_STELLAR_IT=1`) proving a deploy XDR simulates successfully against Testnet.
 - Added `@stellar/stellar-sdk` 15 to `apps/web` and adjusted the generated contract-client package for strict TypeScript/ESLint compatibility.
 
+
+## Phase 5 — Event Subscriber & Live Feed
+
+Stood up the standalone `apps/subscriber` worker that ingests on-chain activity into Postgres and publishes it to Redis, and wired the Phase 4 detail page to a live SSE feed so joins/finalisations/cancellations propagate without a refresh:
+
+- `SubscriberCursor` model + migration (per-contract ledger cursor) and a `ContractEvent @@unique([txHash, type])` migration backing idempotent dedupe.
+- `apps/subscriber` package: Zod-validated `getEvents`/Horizon `payments` wrapper, fail-closed env loader, Prisma singleton reusing the web-generated client through the `web` workspace dependency.
+- Per-contract ledger cursor with restart recovery (`getCursor`/`setCursor`), advanced only after a successful ingest+publish pass (at-least-once).
+- Idempotent reconciliation of `registered`/`finalized`/`cancelled` events into `ContractEvent`/`Participant`/`Payout`/`Tournament` inside one transaction, deduped on `txHash` (replays are no-ops); money handled as `BigInt`.
+- SEP-7 deposit reconciliation: untrusted Horizon payments become registrations only when `memo == tournamentId` and the destination is the contract address.
+- Redis publish to `tournament:<id>` + `pollTournament` orchestration; service loop polls every `ACTIVE` tournament with a `contractId`, isolates per-tournament failures, and shuts down gracefully on SIGTERM/SIGINT.
+- `GET /api/tournaments/[id]/events` SSE route: replays recent confirmed `ContractEvent` rows from Postgres (source of truth) then streams the Redis channel, with heartbeats and a `?fallback=poll` mode.
+- `useTournamentEvents` EventSource hook with auto-reconnect; `<PrizePoolCounter>` ticks up off the stream (key-driven `pool-pop` keyframe, reduced-motion aware) and `<LiveFeed>` renders a human-readable gloss ticker (reduced-motion aware).
+
+End-to-end live-propagation verification (P5.12) is documented as manual steps in the plan/PR — it requires the docker-compose Postgres+Redis stack plus Testnet RPC/Horizon and on-chain transactions, which the CI/sandbox environment does not provide.

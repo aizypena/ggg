@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useTournamentEvents } from "@/hooks/use-tournament-events";
 
 /** Convert a stroop string to human-readable decimal (7 decimal places). */
 function fmt(stroops: string) {
@@ -8,75 +9,59 @@ function fmt(stroops: string) {
 }
 
 /**
- * Fetches the latest tournament detail from the REST endpoint.
- * POLLING FALLBACK — Phase 5 replaces this seam with an SSE source.
- * Isolate any data-source change here and in LiveFeed.
+ * Live prize-pool counter. Seeds from the server snapshot (initialPool /
+ * participantCount) then derives the live total off the SSE stream: every
+ * confirmed REGISTERED event advances the pool to its `poolAfter` (or, for SEP-7
+ * deposits with no poolAfter, by one entry fee). Each advance bumps a key that
+ * replays the `pool-pop` scale animation — `motion-safe:` disables it under
+ * prefers-reduced-motion (BRAND §6).
  */
-async function fetchTournamentDetail(
-  tournamentId: string,
-): Promise<{ pool: string; participantCount: number } | null> {
-  const r = await fetch(`/api/tournaments/${tournamentId}`).then((x) => x.json());
-  if (r.ok) {
-    return {
-      pool: r.data.pool as string,
-      participantCount: (r.data.participants as unknown[]).length,
-    };
-  }
-  return null;
-}
-
 export function PrizePoolCounter({
   tournamentId,
   initialPool,
   asset,
   participantCount,
   entryFee,
-  pollMs = 5000,
 }: {
   tournamentId: string;
   initialPool: string;
   asset: "XLM" | "USDC";
   participantCount: number;
   entryFee: string;
-  pollMs?: number;
 }) {
-  const [pool, setPool] = useState(initialPool);
-  const [count, setCount] = useState(participantCount);
+  const { events } = useTournamentEvents(tournamentId);
 
-  // POLLING FALLBACK — Phase 5 swaps this setInterval for an SSE subscription.
-  // To migrate: remove the useEffect below, subscribe to SSE events instead,
-  // and call setPool / setCount from the event handler.
-  useEffect(() => {
-    let active = true;
-    const id = setInterval(async () => {
-      try {
-        const data = await fetchTournamentDetail(tournamentId);
-        if (data && active) {
-          setPool(data.pool);
-          setCount(data.participantCount);
-        }
-      } catch {
-        // Keep showing the last good value on network failure.
-      }
-    }, pollMs);
-    return () => {
-      active = false;
-      clearInterval(id);
-    };
-  }, [tournamentId, pollMs]);
+  // Pool + count are derived state — computed during render, not stored.
+  // `bumps` counts pool-increasing events so its change can retrigger the pop.
+  const { pool, count, bumps } = useMemo(() => {
+    let p = BigInt(initialPool);
+    let c = participantCount;
+    let b = 0;
+    for (const ev of events) {
+      if (ev.type !== "REGISTERED") continue;
+      c += 1;
+      const after = ev.data.poolAfter;
+      const next = typeof after === "string" ? BigInt(after) : p + BigInt(entryFee);
+      if (next > p) b += 1;
+      p = next;
+    }
+    return { pool: p, count: c, bumps: b };
+  }, [events, initialPool, participantCount, entryFee]);
 
   return (
     <div className="high-contrast-card acid-glow rounded-none p-8">
       <p className="label-caps text-on-surface-variant">Prize pool</p>
       <p className="mt-2 flex items-end gap-3">
-        {/* aria-live="polite" so screen readers announce updates */}
+        {/* aria-live="polite" so screen readers announce updates. The key bumps
+            on each increase, remounting the span to replay the pop animation. */}
         <span
+          key={bumps}
           data-testid="pool-amount"
           aria-live="polite"
           aria-atomic="true"
-          className="data-mono text-[96px] font-extrabold leading-none text-acid-yellow motion-safe:transition-transform"
+          className="data-mono text-[96px] font-extrabold leading-none text-acid-yellow motion-safe:animate-pool-pop"
         >
-          {fmt(pool)}
+          {fmt(pool.toString())}
         </span>
         <span className="label-caps mb-3 text-on-surface-variant">{asset}</span>
       </p>

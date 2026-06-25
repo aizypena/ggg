@@ -63,6 +63,9 @@ Stood up the standalone `apps/subscriber` worker that ingests on-chain activity 
 
 End-to-end live-propagation verification (P5.12) is documented as manual steps in the plan/PR — it requires the docker-compose Postgres+Redis stack plus Testnet RPC/Horizon and on-chain transactions, which the CI/sandbox environment does not provide.
 
+- **Live-propagation verification harness (P5.12 / #81):** added `scripts/verify-live-propagation.sh` (boots an isolated `ggg-verify` docker-compose Postgres 17 + Redis 7 stack on dedicated ports so it never collides with a dev stack, applies migrations, optionally boots `next dev`, tears down on exit) + `apps/subscriber/scripts/verify-propagation.ts`, which drives the real Phase 5 wiring and asserts propagation across four legs: **A** idempotent persistence (`reconcile.applyEvent` — replay is a no-op), **B** Redis pub/sub (`publish.publishChange` → `tournament:<id>`), **C** the real `GET /api/tournaments/[id]/events` SSE endpoint (Postgres replay on connect + a live `data:` frame; reconnects on a fresh connection like the `useTournamentEvents` hook to absorb ioredis's first-connection ready-check race), and **D** an opt-in Testnet poll (Friendbot funding + `poller.pollTournament` against a real contract). Verified locally: **legs A–C PASS (11/11)** against Docker + the live SSE route; leg D is operator-gated on a deployed contract id. Full manual create→join→finalize/cancel runbook in `docs/verification/live-propagation.md`.
+
+
 ## Phase 6 — Hardening & Ship
 
 Wrapping the Phase 0–5 app in test, CI, security, and deployment layers (no new product features).

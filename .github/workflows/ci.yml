@@ -68,6 +68,9 @@ jobs:
       - name: Apply migrations
         run: pnpm --filter web exec prisma migrate deploy
 
+      - name: Seed database
+        run: pnpm --filter web db:seed
+
       - name: Typecheck
         run: pnpm -r typecheck
 
@@ -95,8 +98,14 @@ jobs:
         with:
           targets: wasm32v1-none
 
+      # Install the Stellar CLI from a prebuilt binary — compiling it from source
+      # pulls in libdbus-sys, which needs system libs (libdbus-1-dev/pkg-config)
+      # not present on the runner, and is slow (~17 min). cargo-binstall fetches
+      # the released binary in seconds with no system-dep build.
+      - uses: cargo-bins/cargo-binstall@main
+
       - name: Install stellar-cli
-        run: cargo install --locked stellar-cli@^22 || cargo install --locked soroban-cli
+        run: cargo binstall -y stellar-cli
 
       - name: Contract build
         run: cd contracts/escrow && stellar contract build

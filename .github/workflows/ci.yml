@@ -91,6 +91,8 @@ jobs:
 
   contract:
     runs-on: ubuntu-latest
+    env:
+      STELLAR_CLI_VERSION: "22.0.0"
     steps:
       - uses: actions/checkout@v5
 
@@ -98,14 +100,26 @@ jobs:
         with:
           targets: wasm32v1-none
 
-      # Install the Stellar CLI from a prebuilt binary — compiling it from source
-      # pulls in libdbus-sys, which needs system libs (libdbus-1-dev/pkg-config)
-      # not present on the runner, and is slow (~17 min). cargo-binstall fetches
-      # the released binary in seconds with no system-dep build.
-      - uses: cargo-bins/cargo-binstall@main
-
+      # Install the Stellar CLI from the official GitHub release tarball.
+      # Avoids cargo install from source (which pulls libdbus-sys and requires
+      # system libs libdbus-1-dev/pkg-config unavailable on the runner) and
+      # avoids cargo-binstall, which can hit GitHub API 403 rate limits in CI.
       - name: Install stellar-cli
-        run: cargo binstall -y stellar-cli
+        run: |
+          set -e
+          ARCH=$(uname -m)
+          case "$ARCH" in
+            x86_64) TARGET="x86_64-unknown-linux-gnu" ;;
+            aarch64) TARGET="aarch64-unknown-linux-gnu" ;;
+            *) echo "unsupported arch: $ARCH"; exit 1 ;;
+          esac
+          TARBALL="stellar-cli-${STELLAR_CLI_VERSION}-${TARGET}.tar.gz"
+          URL="https://github.com/stellar/stellar-cli/releases/download/v${STELLAR_CLI_VERSION}/${TARBALL}"
+          curl --proto '=https' --tlsv1.2 -sSL -o "/tmp/${TARBALL}" "$URL"
+          mkdir -p /tmp/stellar-cli
+          tar -xzf "/tmp/${TARBALL}" -C /tmp/stellar-cli
+          install -m 755 /tmp/stellar-cli/stellar /usr/local/bin/stellar
+          stellar --version
 
       - name: Contract build
         run: cd contracts/escrow && stellar contract build

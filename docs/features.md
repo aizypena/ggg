@@ -62,3 +62,9 @@ Stood up the standalone `apps/subscriber` worker that ingests on-chain activity 
 - `useTournamentEvents` EventSource hook with auto-reconnect; `<PrizePoolCounter>` ticks up off the stream (key-driven `pool-pop` keyframe, reduced-motion aware) and `<LiveFeed>` renders a human-readable gloss ticker (reduced-motion aware).
 
 End-to-end live-propagation verification (P5.12) is documented as manual steps in the plan/PR — it requires the docker-compose Postgres+Redis stack plus Testnet RPC/Horizon and on-chain transactions, which the CI/sandbox environment does not provide.
+
+## Phase 6 — Hardening & Ship
+
+Wrapping the Phase 0–5 app in test, CI, security, and deployment layers (no new product features).
+
+- **pnpm audit clean (P6.5):** all 11 `high` advisories were transitive `axios` (`<1.16.0`, pulled via `@stellar/stellar-sdk`). Added a root `pnpm.overrides` entry (`axios@<1.16.0` → `^1.16.0`, resolves to 1.18.1), bringing `pnpm audit --audit-level high` to a clean exit (0 high; 3 moderate remain, below the gate).

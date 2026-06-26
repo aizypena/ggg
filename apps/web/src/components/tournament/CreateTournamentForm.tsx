@@ -49,7 +49,7 @@ function xlmToStroops(xlm: string): string {
   return (BigInt(whole) * STROOP_FACTOR + BigInt(fracPadded)).toString();
 }
 
-type Phase = "idle" | "signing" | "submitting" | "success" | "error";
+type Phase = "idle" | "signing" | "submitting" | "initializing" | "success" | "error";
 
 interface CreateTournamentFormProps {
   expectedPassphrase: string;
@@ -150,12 +150,21 @@ export function CreateTournamentForm({ expectedPassphrase }: CreateTournamentFor
 
       setPhase("signing");
 
-      await signAndSubmit(
+      const submitUrl = `/api/tournaments/${created.data!.tournamentId}/submit`;
+      const deployRes = await signAndSubmit(
         created.data!.unsignedXdr,
         "deploy",
-        `/api/tournaments/${created.data!.tournamentId}/submit`,
+        submitUrl,
         expectedPassphrase,
       );
+
+      // The escrow Wasm has no Soroban constructor, so deploy only creates the
+      // contract — the organiser must sign a second `initialize` transaction to
+      // set its state before anyone can join. Do it under the same action.
+      if (deployRes.initializeXdr) {
+        setPhase("initializing");
+        await signAndSubmit(deployRes.initializeXdr, "initialize", submitUrl, expectedPassphrase);
+      }
 
       setPhase("success");
       router.push(`/tournaments/${created.data!.tournamentId}`);
@@ -361,7 +370,12 @@ export function CreateTournamentForm({ expectedPassphrase }: CreateTournamentFor
 
       {/* Progress modal */}
       <SubmitStateModal
-        open={phase === "signing" || phase === "submitting" || phase === "error"}
+        open={
+          phase === "signing" ||
+          phase === "submitting" ||
+          phase === "initializing" ||
+          phase === "error"
+        }
         phase={phase}
         {...(phase === "error" && error != null ? { message: error } : {})}
         {...(phase === "error"

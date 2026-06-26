@@ -31,7 +31,9 @@ test("cancel → refund — status CANCELLED, one refund per player at entry fee
   await page.getByLabel("Referee Wallet Address").fill(keypairs.referee.public);
   await page.getByRole("button", { name: "Connect Wallet" }).click();
   await page.getByRole("button", { name: "Deploy Soroban Contract" }).click();
-  await page.waitForURL(/\/tournaments\/[a-z0-9]+$/, { timeout: 120_000 });
+  // Exclude `/tournaments/new`: the deploy is still on the create page here, and
+  // a bare `[a-z0-9]+` would match "new" and capture the wrong URL (see #89).
+  await page.waitForURL(/\/tournaments\/(?!new$)[a-z0-9]+$/, { timeout: 120_000 });
   const detailUrl = page.url();
   await expect(page.getByTestId("status-chip")).toHaveText("ACTIVE", { timeout: 120_000 });
 
@@ -46,8 +48,12 @@ test("cancel → refund — status CANCELLED, one refund per player at entry fee
       .click({ timeout: 120_000 })
       .catch(() => {});
   }
-  await page.goto(detailUrl);
-  await expect(page.getByTestId("participant-row")).toHaveCount(2, { timeout: 120_000 });
+  // Participant rows are subscriber-ingested a few seconds after each join, so
+  // reload-poll until both land rather than asserting one early render.
+  await expect(async () => {
+    await page.goto(detailUrl);
+    await expect(page.getByTestId("participant-row")).toHaveCount(2);
+  }).toPass({ timeout: 150_000 });
   await page.screenshot({ path: `${SHOT}-1-two-joined.png`, fullPage: true });
 
   // ── 3. Organiser cancels (cancel-button → confirm-cancel dialog → sign). ───
@@ -60,11 +66,20 @@ test("cancel → refund — status CANCELLED, one refund per player at entry fee
   // The cancel signs + submits on-chain; the page refreshes to CANCELLED.
 
   // ── 4. Assert CANCELLED status + one refund row per player at entry fee. ───
+  // Wait for the cancel to submit and the page to refresh to CANCELLED in-place
+  // (CancelButton calls router.refresh on success) — do NOT reload here, since
+  // navigating away would abort the in-flight cancel submission.
   await expect(page.getByTestId("status-chip")).toHaveText("CANCELLED", { timeout: 120_000 });
-  const refunds = page.getByTestId("refund-row");
-  await expect(refunds).toHaveCount(2);
+  // Refund rows are subscriber-ingested from the on-chain `cancelled` event;
+  // reload-poll until both land.
+  await expect(async () => {
+    await page.goto(detailUrl);
+    await expect(page.getByTestId("refund-row")).toHaveCount(2);
+  }).toPass({ timeout: 150_000 });
   // Each refund equals the entry fee (2.0000000 XLM).
-  await expect(refunds.first()).toContainText(`${Number(ENTRY_FEE_XLM).toFixed(7)} XLM`);
+  await expect(page.getByTestId("refund-row").first()).toContainText(
+    `${Number(ENTRY_FEE_XLM).toFixed(7)} XLM`,
+  );
   await page.screenshot({ path: `${SHOT}-3-cancelled-refunds.png`, fullPage: true });
 
   // Log refund context for the record (refund tx hashes live in the LiveFeed +

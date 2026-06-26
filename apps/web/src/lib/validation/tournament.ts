@@ -66,7 +66,7 @@ export type CreateTournamentInput = z.infer<typeof createTournamentSchema>;
 
 export const submitSchema = z.object({
   signedXdr: signedXdrSchema,
-  intent: z.enum(["deploy", "join", "finalize", "cancel"]),
+  intent: z.enum(["deploy", "initialize", "join", "finalize", "cancel"]),
 });
 export type SubmitInput = z.infer<typeof submitSchema>;
 

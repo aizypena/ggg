@@ -3,13 +3,31 @@ import { pollTournament } from "./poller";
 import { env } from "./env";
 
 /**
- * One poll pass over every ACTIVE tournament that has a deployed contract.
+ * One poll pass over every tournament that still needs on-chain reconciliation.
+ *
+ * This is ACTIVE tournaments plus those that *just* became FINISHED/CANCELLED:
+ * the web app flips the status the moment the finalize/cancel transaction is
+ * submitted, but the matching `finalized`/`cancelled` event (and its payouts) is
+ * only ingested here. Polling terminal tournaments for a grace window after the
+ * transition ensures that final event still gets reconciled instead of being
+ * dropped because the status already left ACTIVE.
+ *
  * A failure polling one tournament is logged and isolated so the others still
  * run (and so the loop survives a transient RPC/Horizon outage).
  */
+const TERMINAL_GRACE_MS = 15 * 60 * 1000;
+
 export async function tick(): Promise<void> {
+  const graceSince = new Date(Date.now() - TERMINAL_GRACE_MS);
   const tournaments = await prisma.tournament.findMany({
-    where: { status: "ACTIVE", contractId: { not: null } },
+    where: {
+      contractId: { not: null },
+      OR: [
+        { status: "ACTIVE" },
+        { status: "FINISHED", finalizedAt: { gt: graceSince } },
+        { status: "CANCELLED", cancelledAt: { gt: graceSince } },
+      ],
+    },
     select: { id: true, contractId: true },
   });
   for (const t of tournaments) {

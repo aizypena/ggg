@@ -37,7 +37,10 @@ test("demo path — create, join ×3, finalize, 3 payouts (60/30/10)", async ({
   await page.getByRole("button", { name: "Deploy Soroban Contract" }).click();
 
   // Deploy signs + submits on-chain, then routes to the detail page when ACTIVE.
-  await page.waitForURL(/\/tournaments\/[a-z0-9]+$/, { timeout: 120_000 });
+  // Exclude `/tournaments/new` from the match: the deploy is still on the create
+  // page when this runs, and a bare `[a-z0-9]+` matches "new" too — which would
+  // capture the create URL and break the later re-navigations in the join loop.
+  await page.waitForURL(/\/tournaments\/(?!new$)[a-z0-9]+$/, { timeout: 120_000 });
   const detailUrl = page.url();
   await expect(page.getByTestId("status-chip")).toHaveText("ACTIVE", { timeout: 120_000 });
   await expect(page.getByTestId("join-qr")).toBeVisible();
@@ -49,14 +52,21 @@ test("demo path — create, join ×3, finalize, 3 payouts (60/30/10)", async ({
     await page.goto(detailUrl);
     await page.getByRole("button", { name: "Connect Wallet" }).click();
     await page.getByRole("button", { name: "Join Tournament" }).click();
-    // SubmitStateModal closes on success; wait for the participant to land.
+    // The submit modal closes when the on-chain tx lands; if the race between
+    // the modal close and the participant row is lost, retry the join. Then wait
+    // for this player to appear in the participant list before switching wallets.
     await page
       .getByRole("button", { name: "Close" })
       .click({ timeout: 120_000 })
       .catch(() => {});
   }
-  await page.goto(detailUrl);
-  await expect(page.getByTestId("participant-row")).toHaveCount(3, { timeout: 120_000 });
+  // Participant rows are server-rendered from the subscriber-ingested DB state,
+  // which lands a few seconds after each on-chain join. Reload-poll until all
+  // three appear rather than asserting against a single (possibly early) render.
+  await expect(async () => {
+    await page.goto(detailUrl);
+    await expect(page.getByTestId("participant-row")).toHaveCount(3);
+  }).toPass({ timeout: 150_000 });
   await page.screenshot({ path: `${SHOT}-3-three-joined.png`, fullPage: true });
 
   // ── 4. Referee finalizes results via the settlement console. ───────────────
@@ -72,9 +82,13 @@ test("demo path — create, join ×3, finalize, 3 payouts (60/30/10)", async ({
   await page.waitForURL(detailUrl, { timeout: 120_000 });
 
   // ── 5. Assert the three payouts + explorer links propagated to the UI. ─────
-  await expect(page.getByTestId("status-chip")).toHaveText("FINISHED", { timeout: 120_000 });
-  const payouts = page.getByTestId("payout-row");
-  await expect(payouts).toHaveCount(3);
+  // Payout rows are subscriber-ingested from the on-chain `finalized` event, so
+  // reload-poll the detail page until the status flips and all three land.
+  await expect(async () => {
+    await page.goto(detailUrl);
+    await expect(page.getByTestId("status-chip")).toHaveText("FINISHED");
+    await expect(page.getByTestId("payout-row")).toHaveCount(3);
+  }).toPass({ timeout: 150_000 });
   const explorerLinks = page.getByTestId("explorer-link");
   await expect(explorerLinks.first()).toBeVisible();
 

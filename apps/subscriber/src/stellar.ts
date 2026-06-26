@@ -75,7 +75,8 @@ export async function getEvents(contractId: string, startLedger: number): Promis
     if (m) {
       const min = Number(m[1]);
       const max = Number(m[2]);
-      if (startLedger < min) return await fetchEvents(contractId, Math.max(min, max - RECENT_WINDOW));
+      if (startLedger < min)
+        return await fetchEvents(contractId, Math.max(min, max - RECENT_WINDOW));
       if (startLedger > max) return { latestLedger: max, events: [] };
     }
     throw err;

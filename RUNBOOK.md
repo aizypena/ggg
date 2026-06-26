@@ -93,10 +93,11 @@ CI (`.github/workflows/ci.yml`) gates merge with two jobs:
 - **`contract`** — `stellar contract build` + `cargo test`.
 
 A maintainer enables branch protection once (requires repo admin; cannot be set
-from CI):
+from CI). The repository's default branch is **`develop`** — protect that branch
+(adjust if/when `main` becomes the release branch):
 
 ```bash
-gh api -X PUT repos/:owner/:repo/branches/main/protection \
+gh api -X PUT repos/:owner/:repo/branches/develop/protection \
   -F required_status_checks.strict=true \
   -F 'required_status_checks.contexts[]=app' \
   -F 'required_status_checks.contexts[]=contract' \

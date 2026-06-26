@@ -3,6 +3,7 @@ import { env } from "@/lib/env";
 import {
   buildCancelTx,
   buildDeployInitializeTx,
+  buildInitializeTx,
   buildFinalizeTx,
   buildJoinTx,
   explorerContractUrl,
@@ -57,6 +58,42 @@ export interface SubmitTxResult {
   contractId?: string | null;
   status: string;
   explorerUrl: string;
+  /**
+   * Set on a successful `deploy`: the unsigned `initialize` XDR for the
+   * just-created contract. The escrow Wasm has no Soroban constructor, so the
+   * organiser must sign this second transaction to set the contract's state
+   * (organizer/referee/token/fee) before anyone can join. See buildInitializeTx.
+   */
+  initializeXdr?: string;
+}
+
+/**
+ * Builds the unsigned `initialize` XDR for a deployed tournament contract from
+ * its persisted parameters. Returns undefined if the record is missing the
+ * fields needed to initialise (e.g. tokenAddr), so callers can degrade safely.
+ */
+async function buildInitXdrFor(
+  tournament: {
+    organizerAddr: string;
+    refereeAddr: string;
+    tokenAddr: string | null;
+    entryFee: bigint;
+    firstBps: number;
+    secondBps: number;
+    thirdBps: number;
+  },
+  contractId: string,
+): Promise<string | undefined> {
+  if (!tournament.tokenAddr) return undefined;
+  const { xdr } = await buildInitializeTx({
+    contractId,
+    organizerAddress: tournament.organizerAddr,
+    refereeAddress: tournament.refereeAddr,
+    tokenAddr: tournament.tokenAddr,
+    entryFee: tournament.entryFee,
+    distributionBps: [tournament.firstBps, tournament.secondBps, tournament.thirdBps],
+  });
+  return xdr;
 }
 
 /**
@@ -79,9 +116,9 @@ export async function submitTournamentTx(
     throw Object.assign(new Error("Tournament not found"), { status: 404 });
   }
 
-  // deploy and cancel are organiser-scoped (IDOR guard).
+  // deploy, initialize and cancel are organiser-scoped (IDOR guard).
   if (
-    (input.intent === "deploy" || input.intent === "cancel") &&
+    (input.intent === "deploy" || input.intent === "initialize" || input.intent === "cancel") &&
     tournament.organizerId !== userId
   ) {
     throw Object.assign(new Error("Forbidden"), { status: 403 });
@@ -90,13 +127,17 @@ export async function submitTournamentTx(
   // Guard against re-submitting an already-confirmed deploy (spec §5: dedupe on
   // confirmed state). contractId has a @unique constraint in the Prisma schema,
   // so a second Prisma update with the same value would also throw a unique
-  // violation — but we short-circuit before hitting Stellar at all.
+  // violation — but we short-circuit before hitting Stellar at all. We still
+  // hand back a fresh initialize XDR so an interrupted deploy→initialize flow
+  // can complete the second leg on retry.
   if (input.intent === "deploy" && tournament.status === "ACTIVE" && tournament.contractId) {
+    const initializeXdr = await buildInitXdrFor(tournament, tournament.contractId);
     return {
       txHash: tournament.deployTxHash ?? "",
       contractId: tournament.contractId,
       status: tournament.status,
       explorerUrl: explorerTxUrl(tournament.deployTxHash ?? ""),
+      ...(initializeXdr ? { initializeXdr } : {}),
     };
   }
 
@@ -117,10 +158,28 @@ export async function submitTournamentTx(
         deployTxHash: result.hash,
       },
     });
+    // The contract is deployed but not yet initialised — hand the organiser the
+    // second (initialize) XDR to sign so the contract becomes joinable.
+    const initializeXdr = updated.contractId
+      ? await buildInitXdrFor(updated, updated.contractId)
+      : undefined;
     return {
       txHash: result.hash,
       contractId: updated.contractId,
       status: updated.status,
+      explorerUrl: explorerTxUrl(result.hash),
+      ...(initializeXdr ? { initializeXdr } : {}),
+    };
+  }
+
+  // initialize: confirms the contract's state-setting transaction. No DB
+  // mutation — the tournament is already ACTIVE from the deploy leg; this just
+  // verifies the on-chain initialise landed so join/finalize won't panic.
+  if (input.intent === "initialize") {
+    return {
+      txHash: result.hash,
+      contractId: tournament.contractId,
+      status: tournament.status,
       explorerUrl: explorerTxUrl(result.hash),
     };
   }

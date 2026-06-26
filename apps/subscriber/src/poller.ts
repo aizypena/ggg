@@ -10,6 +10,15 @@ const TOPIC_TO_TYPE: Record<string, EventType> = {
   cancelled: "CANCELLED",
 };
 
+// How many ledgers behind the reported tip to keep the cursor, so freshly-closed
+// ledgers whose events aren't queryable yet get re-scanned on later polls rather
+// than stepped over. The public Testnet RPC can lag event indexing by minutes, so
+// keep a wide rolling re-scan window (~100 ledgers ≈ 8min on Testnet). Re-scans are
+// cheap (getEvents is filtered to this contract) and idempotent (applyEvent
+// dedupes on txHash), so a generous lag trades a little redundant work for not
+// losing a late-indexed event.
+const SAFETY_LAG = 100;
+
 function decodeEvent(raw: {
   ledger: number;
   txHash: string;
@@ -22,12 +31,23 @@ function decodeEvent(raw: {
   const value = decodeScVal(raw.value) as unknown;
   let data: Record<string, unknown>;
   if (type === "REGISTERED") {
-    const [player, poolAfter] = value as [string, bigint];
+    // Contract emits `(symbol "registered", player)` as the topic and the
+    // post-join pool total as the value — the player address is in topic[1],
+    // NOT the value (which is a bare i128).
+    const player = String(decodeScVal(raw.topic[1]!));
+    const poolAfter = value as bigint;
     data = { player, poolAfter: poolAfter.toString() };
   } else if (type === "FINALIZED") {
-    const [first, second, third, amounts] = value as [string, string, string, bigint[]];
+    // Topic is `(symbol "finalized", first, second, third)`; the value is the
+    // `Vec<i128>` of payout amounts. Winners come from the topic, amounts from
+    // the value.
+    const first = String(decodeScVal(raw.topic[1]!));
+    const second = String(decodeScVal(raw.topic[2]!));
+    const third = String(decodeScVal(raw.topic[3]!));
+    const amounts = value as bigint[];
     data = { first, second, third, amounts: amounts.map((a) => a.toString()) };
   } else {
+    // CANCELLED: topic is `(symbol "cancelled",)`; value is the refunded count.
     const refundedCount = Number(value as bigint | number);
     data = { refundedCount };
   }
@@ -65,6 +85,14 @@ export async function pollTournament(tournament: {
     changes.push(change);
   }
 
-  await setCursor(tournament.contractId, res.latestLedger + 1, sep7.nextCursor ?? undefined);
+  // Advance the cursor to just behind the tip rather than past it. Soroban RPC's
+  // reported `latestLedger` runs a little ahead of when a closed ledger's events
+  // are queryable, so jumping the cursor straight to `latestLedger + 1` can step
+  // over an event that only becomes visible a poll or two later — losing it for
+  // good. Keeping a small SAFETY_LAG re-scans the most recent ledgers each tick;
+  // applyEvent dedupes on txHash, so re-seeing an already-ingested event is a
+  // no-op. (Never regress below the current cursor.)
+  const nextLedger = Math.max(cursor.ledger, res.latestLedger + 1 - SAFETY_LAG);
+  await setCursor(tournament.contractId, nextLedger, sep7.nextCursor ?? undefined);
   return changes;
 }

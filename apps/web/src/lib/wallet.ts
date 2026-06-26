@@ -1,7 +1,12 @@
 "use client";
 import freighter from "@stellar/freighter-api";
 
-export type SubmitResult = { txHash: string; contractId?: string; status?: string };
+export type SubmitResult = {
+  txHash: string;
+  contractId?: string;
+  status?: string;
+  initializeXdr?: string;
+};
 
 export async function ensureWallet(expectedPassphrase: string): Promise<string> {
   const connected = await freighter.isConnected();
@@ -30,7 +35,7 @@ export async function ensureWallet(expectedPassphrase: string): Promise<string> 
 
 export async function signAndSubmit(
   unsignedXdr: string,
-  intent: "deploy" | "join" | "finalize" | "cancel",
+  intent: "deploy" | "initialize" | "join" | "finalize" | "cancel",
   submitUrl: string,
   expectedPassphrase: string,
 ): Promise<SubmitResult> {

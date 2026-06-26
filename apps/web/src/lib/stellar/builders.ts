@@ -37,6 +37,44 @@ export async function buildJoinTx(params: {
   return { xdr: assembled.toXDR(), network: networkName() };
 }
 
+/**
+ * Builds the `initialize` invocation for a freshly-deployed escrow contract.
+ *
+ * The Phase-1 binding's `Client.deploy` only runs `createCustomContract` (it
+ * deploys the Wasm instance) — the contract exposes a plain `initialize`
+ * function, not a Soroban `__constructor`, so the deployed contract has no
+ * organizer/referee/token/fee state until this second transaction lands. The
+ * organizer signs it (the contract calls `organizer.require_auth()`, satisfied
+ * by source-account auth since the organizer is the transaction source).
+ */
+export async function buildInitializeTx(params: {
+  contractId: string;
+  organizerAddress: string;
+  refereeAddress: string;
+  tokenAddr: string;
+  entryFee: bigint;
+  distributionBps: [number, number, number];
+}): Promise<{ xdr: string; network: string }> {
+  parse(stellarContractId, params.contractId, "contractId");
+  parse(stellarPublicKey, params.organizerAddress, "organizerAddress");
+  parse(stellarPublicKey, params.refereeAddress, "refereeAddress");
+  parse(stellarContractId, params.tokenAddr, "tokenAddr");
+  parse(i128Amount, params.entryFee, "entryFee");
+  parse(bpsSchema, params.distributionBps, "distributionBps");
+  if (params.organizerAddress === params.refereeAddress) {
+    throw new StellarError("INVALID_INPUT", "organizer must differ from referee");
+  }
+  const c = clientFor(params.contractId, params.organizerAddress);
+  const assembled = await c.initialize({
+    organizer: params.organizerAddress,
+    referee: params.refereeAddress,
+    token: params.tokenAddr,
+    entry_fee: params.entryFee,
+    distribution_bps: params.distributionBps,
+  });
+  return { xdr: assembled.toXDR(), network: networkName() };
+}
+
 export async function buildFinalizeTx(params: {
   contractId: string;
   refereeAddress: string;

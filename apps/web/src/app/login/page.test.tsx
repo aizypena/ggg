@@ -1,13 +1,13 @@
+import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import userEvent from "@testing-library/user-event";
 
-// Hoist mocks so they're available before module imports (vi.mock is hoisted but the
-// variable assignments are not, so we must use vi.hoisted)
-const { mockSignIn, mockPush } = vi.hoisted(() => {
+const { mockSignIn, mockPush, mockFetch } = vi.hoisted(() => {
   return {
     mockSignIn: vi.fn(),
     mockPush: vi.fn(),
+    mockFetch: vi.fn(),
   };
 });
 
@@ -20,12 +20,14 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("next/link", () => ({
-  default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
+  default: ({ href, children, ...rest }: React.ComponentPropsWithoutRef<"a"> & { children: React.ReactNode }) => (
     <a href={href} {...rest}>
       {children}
     </a>
   ),
 }));
+
+vi.stubGlobal("fetch", mockFetch);
 
 import LoginPage from "./page";
 
@@ -92,7 +94,6 @@ describe("/login page", () => {
     });
     expect(mockPush).not.toHaveBeenCalled();
 
-    // Ensure error message doesn't specify which field is wrong
     const alertText = screen.getByRole("alert").textContent ?? "";
     expect(alertText).not.toMatch(/incorrect password/i);
   });
@@ -129,6 +130,11 @@ describe("/login page", () => {
   });
 
   it("redirects to /tournaments on successful sign-in", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ user: { role: "player" } }),
+    });
+
     mockSignIn.mockResolvedValueOnce({ ok: true, error: null });
 
     render(<LoginPage />);
@@ -142,7 +148,6 @@ describe("/login page", () => {
   });
 
   it("disables the submit button while pending", async () => {
-    // Never resolves — keeps the button disabled
     mockSignIn.mockImplementationOnce(() => new Promise(() => {}));
 
     render(<LoginPage />);

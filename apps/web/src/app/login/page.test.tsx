@@ -20,7 +20,11 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("next/link", () => ({
-  default: ({ href, children, ...rest }: React.ComponentPropsWithoutRef<"a"> & { children: React.ReactNode }) => (
+  default: ({
+    href,
+    children,
+    ...rest
+  }: React.ComponentPropsWithoutRef<"a"> & { children: React.ReactNode }) => (
     <a href={href} {...rest}>
       {children}
     </a>

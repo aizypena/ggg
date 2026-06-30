@@ -160,10 +160,8 @@ describe("/login page", () => {
     expect(screen.getByRole("button", { name: /sign in/i })).toHaveClass("label-caps");
   });
 
-  it("submit button has electric-violet-strong background class", () => {
+  it("submit button has bg-primary class", () => {
     render(<LoginPage />);
-    expect(screen.getByRole("button", { name: /sign in/i }).className).toMatch(
-      /electric-violet-strong/,
-    );
+    expect(screen.getByRole("button", { name: /sign in/i })).toHaveClass("bg-primary");
   });
 });

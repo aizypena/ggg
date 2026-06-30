@@ -1,117 +1,124 @@
 # GGG — Brand & Design System
 
-This is the visual contract for GGG (Good Game Guild). It is extracted directly from the provided mock screens (Referee Settlement Console, Tournament Creator, Live Prize Pool) and codified for implementation in Tailwind CSS v4. When a screen isn't specified, derive from these tokens — don't invent a parallel system.
+This is the visual contract for GGG (Good Game Guild). It is extracted directly from the provided mock screens (Referee Settlement Console, Tournament Creator, Live Prize Pool) and codified for implementation in Tailwind CSS. When a screen isn't specified, derive from these tokens — don't invent a parallel system.
 
-The aesthetic is **kinetic crypto-brutalism**: a near-black competitive-gaming surface, an electric acid-yellow as the protocol's voice, an electric violet for action, hard offset shadows for high-stakes moments, and frosted "kinetic glass" for everything fluid. Monospace for anything that is data or on-chain; a tight geometric sans for everything human.
+The aesthetic is **Titanium Carbon**: a technical-noir settlement terminal milled from carbon fibre and titanium, lit by burnt **bronze/amber** as the protocol's single voice. Recessed "milled" inputs, hard 1px industrial borders, frosted glass for fluid content, and a low bronze glow on every high-stakes control. Monospace for anything that is data or on-chain; a tight geometric sans for everything human.
 
 ---
 
 ## 1. Design thesis
 
-- **Trustless, on-chain, live.** The UI should feel like a settlement terminal, not a marketing site. Money is real, the ledger is immutable, and the interface signals that with monospaced addresses, live pulses, and decisive hard-edged controls.
-- **Two surface registers, one system.** High-stakes / irreversible screens (settlement, the prize pool itself) use **brutalist** hard borders with `4px 4px 0` offset shadows and zero radius. Configuration / browsing screens (create tournament, lists) use softer **kinetic glass** panels with subtle radii. Both draw from the same palette and type.
-- **Acid is the brand; violet is the verb.** Acid-yellow marks identity, live state, and on-chain truth. Electric violet marks the primary irreversible action (deploy, finalize).
+- **Trustless, on-chain, live.** The UI should feel like a precision-engineered settlement terminal, not a marketing site. Money is real, the ledger is immutable, and the interface signals that with monospaced addresses, live pulses, recessed machined fields, and decisive bronze controls.
+- **Two surface registers, one system.** High-stakes / structural screens (settlement, the prize pool, contract config) use hard **industrial / titanium** 1px borders with inset "milled" shadows and a low bronze glow. Fluid / secondary content (candidate lists, stat cards, live feeds) uses frosted **kinetic glass** panels. Both draw from the same palette and type.
+- **Bronze is the brand and the verb.** Burnt amber (`#f7bd48`) marks identity, live state, on-chain truth **and** the primary irreversible action (deploy, finalize, connect). There is no second action color — bronze carries the eye to the one decisive control on each screen. Don't scatter it.
 
 ---
 
 ## 2. Color tokens
 
-Near-black canvas, high-contrast accents. Hex values are taken verbatim from the mock's Tailwind config. In Tailwind v4 declare these in an `@theme` block as `--color-*` custom properties.
+Near-black canvas, warm bronze accents. Hex values are taken verbatim from the mock's Tailwind config. Declare these as Tailwind theme colors (or `--color-*` custom properties in a v4 `@theme` block).
 
 ### Brand accents
 | Token | Hex | Role |
 |---|---|---|
-| `acid-yellow` | `#cdf200` | **Primary brand accent.** Logo, live indicators, on-chain truth, key data, focus on brutalist screens. |
-| `acid-yellow-bright` | `#d9ff00` | Brighter acid variant used on the darkest canvas (`#0A0A0B`). |
-| `secondary-fixed-dim` | `#b4d400` | Dim acid for secondary data / progress fills. |
-| `electric-violet` | `#a078ff` | **Primary action accent** (finalize/deploy buttons, violet left-borders, links). |
-| `electric-violet-strong` | `#8B5CF6` | Stronger violet for solid primary buttons + focus rings on glass screens. |
-| `primary` | `#d0bcff` | Light-violet for headings/highlights on dark surfaces. |
-| `inverse-primary` | `#6d3bd7` | Deep violet for inverse contexts. |
+| `primary` / `primary-fixed-dim` / `surface-tint` | `#f7bd48` | **Primary brand + action accent.** Logo, live indicators, on-chain truth, key data, focus rings, and the primary CTA. |
+| `primary-container` | `#ba880f` | Deep bronze — the dark stop of the bronze gradient; hover/active container fills. |
+| `primary-fixed` | `#ffdea6` | Light amber for subtle valuation / sub-labels. |
+| `on-primary` | `#412d00` | Near-black-brown text **on** bronze fills. |
+| `on-primary-container` | `#392700` | Text on deep-bronze containers. |
+| `secondary` / `secondary-fixed-dim` | `#fbb980` | Warm peach — status accents, "READY" states, secondary indicator dots. |
+| `secondary-container` | `#693c0e` | Bronze-brown fill for the active nav item. |
+| `on-secondary-container` | `#e7a871` | Text/icons on the active nav fill. |
+| `tertiary` / `tertiary-fixed-dim` | `#a1c9ff` | Cool blue — used sparingly for code syntax (type names) and informational contrast only. |
 
 ### Surfaces (dark ramp)
 | Token | Hex |
 |---|---|
-| `background` | `#131314` (primary canvas) / `#0A0A0B` (deepest canvas, creator screens) |
-| `surface-container-lowest` | `#0e0e0f` |
-| `surface-container-low` | `#1c1b1c` |
-| `surface-container` | `#201f20` |
-| `surface-container-high` | `#2a2a2b` |
-| `surface-container-highest` | `#353436` |
-| `surface-variant` | `#353436` |
-| `surface-bright` | `#3a393a` |
+| `background` / `surface` / `surface-dim` | `#131313` (primary canvas) |
+| `surface-container-lowest` | `#0e0e0e` (milled-input floor, deepest panels) |
+| `surface-container-low` | `#1c1b1b` |
+| `surface-container` | `#201f1f` |
+| `surface-container-high` | `#2a2a2a` |
+| `surface-container-highest` / `surface-variant` | `#353534` |
+| `surface-bright` | `#393939` |
+
+> Code/terminal panes drop even lower to `#0a0a0a` / `#0A0A0A` (raw hex in the mock) for the contract source view and milled fields.
 
 ### Text & lines
 | Token | Hex | Role |
 |---|---|---|
-| `on-background` / `on-surface` | `#e5e2e3` | Primary text on dark. |
-| `on-surface-variant` | `#cbc3d7` | Secondary / muted text. |
-| `outline` | `#958ea0` | Default borders, incl. brutalist border color. |
-| `outline-variant` | `#494454` | Hairline dividers, subtle borders. |
-| `secondary` | `#ffffff` | Pure white for 2nd-place / max-emphasis text. |
+| `on-background` / `on-surface` | `#e5e2e1` | Primary text on dark. |
+| `on-surface-variant` | `#d3c4af` | Secondary / muted text (warm taupe). |
+| `outline` | `#9c8f7b` | Default borders, muted labels, drop-zone glyphs. |
+| `outline-variant` | `#4f4535` | Hairline dividers, dashed winner-slot borders. |
+| `secondary` (white-ish) | — | Max emphasis handled by `on-surface` `#e5e2e1`; true white reserved for tiny accent strips. |
 
 ### Semantic / state
 | Token | Hex | Role |
 |---|---|---|
-| `error` | `#ffb4ab` | Error text / "remove" affordances. |
+| `error` | `#ffb4ab` | Error text / "remove" affordances, idle status dots. |
 | `error-container` | `#93000a` | Error surface. |
+| `on-error` | `#690005` | Text on error fills. |
 | `on-error-container` | `#ffdad6` | Text on error surface. |
-| `on-secondary-fixed` | `#181e00` | Text on acid-yellow fills. |
-| `on-secondary-container` | `#000000` / `#5a6b00` | Text on acid containers (black on bright acid). |
+| `tertiary-container` | `#5594db` | Informational blue container (rare). |
 
 ### Usage rules
-- **Text on acid-yellow** is always near-black (`on-secondary-fixed` `#181e00` or `#000000`) — never white. Acid is bright; preserve legibility.
-- **Acid-yellow is a highlight, not a background field.** Reserve it for the logo, live dots, key numbers, active nav, and the borders of "live"/active states. Large acid fills are only for small badges and the single hero prize number.
-- **Violet drives the eye to the one irreversible action** on a screen. Don't scatter it.
-- Maintain WCAG AA contrast: body text uses `on-surface` `#e5e2e3` on the dark ramp; muted text uses `on-surface-variant` and is never used for critical small print.
+- **Text on bronze (`#f7bd48`) is always near-black-brown** (`on-primary` `#412d00`) — never white. Bronze is bright; preserve legibility.
+- **Bronze is a highlight, not a background field.** Reserve solid bronze for the logo, live dots, key numbers, active nav border, badges, and the single primary CTA per screen. Large bronze appears only as the hero prize number (via `bronze-gradient` text clip) and small badges/buttons.
+- **One bronze action per screen.** Because bronze is also the brand color, the irreversible CTA earns the most saturated treatment (solid fill or `bronze-gradient-btn`); everything else uses bronze sparingly as tint or border.
+- Maintain WCAG AA contrast: body text uses `on-surface` `#e5e2e1`; muted text uses `on-surface-variant` `#d3c4af` and is never used for critical small print.
 
 ---
 
 ## 3. Typography
 
-Three roles, two families. Load via Google Fonts: **Sora** (400/600/700/800) and **Space Mono** (400/700). Icons via **Material Symbols Outlined**.
+Three roles, two families. Load via Google Fonts: **Sora** (400/500/600/700/800) and **JetBrains Mono** (400/500/700). Icons via **Material Symbols Outlined**.
 
 | Family | Role |
 |---|---|
 | **Sora** | Display + body — every human-readable headline and paragraph. |
-| **Space Mono** | Data + labels — wallet addresses, amounts, tx hashes, tournament IDs, and all-caps eyebrow labels. |
-| **Material Symbols Outlined** | Iconography. Default `FILL 0, wght 400`; switch to `FILL 1` for active/selected icons. |
+| **JetBrains Mono** | Data + labels — wallet addresses, amounts, tx hashes, tournament/match IDs, contract source, telemetry, and all-caps eyebrow labels. |
+| **Material Symbols Outlined** | Iconography. Default `FILL 0, wght 400, GRAD 0, opsz 24`; switch to `FILL 1` (`.fill-icon`) for active/selected icons. |
 
 ### Type scale (verbatim from mock)
 | Token | Size / line / tracking / weight | Use |
 |---|---|---|
-| `headline-xl` | 48px / 1.1 / −0.04em / 800 | Page hero titles (e.g. tournament name, "Create Tournament"). |
-| `headline-lg` | 32px / 1.2 / −0.02em / 700 | Section headings, large numbers. |
-| `headline-lg-mobile` | 24px / 1.2 / −0.02em / 700 | Mobile hero / card titles. |
-| `body-lg` | 18px / 1.6 / 0 / 400 | Lead paragraphs. |
-| `body-md` | 16px / 1.5 / 0 / 400 | Default body. |
-| `data-mono` | 14px / 1.4 / −0.01em / 500 | Wallet/tx/data values (Space Mono). |
-| `label-caps` | 12px / 1 / 0.1em / 700 | Uppercase eyebrows, nav, button labels (Space Mono). |
+| `display-lg` | 48px / 1.1 / −0.02em / 800 | Page hero titles ("Referee Console") and the prize-pool number. |
+| `headline-lg` | 32px / 1.2 / 700 | Section headings, large stat numbers, settlement modal title. |
+| `headline-md` | 24px / 1.3 / 600 | Page/sub-section headings, panel titles, top-bar title. |
+| `headline-lg-mobile` | 24px / 1.2 / 700 | Mobile hero / card titles. |
+| `body-lg` | 18px / 1.6 / 400 | Lead paragraphs, prominent button labels. |
+| `body-md` | 16px / 1.5 / 400 | Default body. |
+| `data-value` | 14px / 1.2 / 700 | Wallet/tx/amount values (JetBrains Mono). |
+| `data-label` | 14px / 1.2 / 0.05em / 500 | Mono eyebrows, telemetry, all-caps system labels (JetBrains Mono). |
+| `caption` | 12px / 1.4 / 500 | Fine print, timestamps, sub-labels (Sora). |
 
 ### Typographic mannerisms (from the mock)
-- **All-caps mono labels** with wide tracking (`0.1em`) for nav, section eyebrows, badges, and button text on brutalist screens.
-- **Italic + uppercase + tight tracking** for the most charged moments — the "GGG" wordmark on the live screen, "Finalize Payouts", winner names in settlement slots. Use italics sparingly, as an accent.
-- Big **number-forward** displays: the prize pool renders at up to 100–160px in `headline-xl` weight, acid-yellow, with the unit ("XLM") set small and dim beside it.
-- Addresses, hashes, IDs are **always Space Mono**, often tinted acid or violet and set on a subtle surface chip (`bg-surface-container px-2`).
+- **All-caps mono labels** (`data-label`) with wide inline tracking (`tracking-widest`, `tracking-[0.2em]`, `tracking-[0.3em]`) for nav eyebrows, section labels, badges, button text, and system status.
+- **Tight uppercase + negative tracking** for the wordmark and the most charged moments — "GGG PROTOCOL", "Referee Console", "Powered by Soroban" (italic). Use italics sparingly, as an accent.
+- Big **number-forward** displays: the prize pool renders large in `display-lg` weight via the **`bronze-gradient`** text clip, with the unit ("XLM") set small and dim beside it. Countdown digits use `display-lg`/`headline-lg`, the live seconds tinted `primary`.
+- Addresses, hashes, IDs, fees, basis-point splits are **always JetBrains Mono** (`data-value`), often tinted `primary` and set on a subtle surface chip (`bg-surface-container-high px-2`).
 
 ---
 
 ## 4. Spacing, radius, layout
 
 ### Spacing tokens (verbatim)
-`unit` 4px · `stack-tight` 8px · `stack-dense` 12px · `gutter` 16px · `margin-mobile` 16px · `margin-desktop` 40px · `container-max` 1440px.
+`xs` 4px · `sm` 8px · `base` 8px · `md` 16px · `lg` 24px · `gutter` 24px · `margin` 32px · `xl` 48px.
+
+> Note the gutter is now **24px** and the desktop margin **32px** (both larger/tighter than the prior system). Content panels breathe with `p-lg` (24px) to `p-xl` (48px); dense data rows are separated by hairline `surface-variant`/`outline-variant` dividers.
 
 ### Radius
 `DEFAULT` 0.25rem · `lg` 0.5rem · `xl` 0.75rem · `full` 9999px.
-- **Brutalist surfaces use `rounded-none`** (settlement, prize pool, high-contrast cards).
-- **Glass / config surfaces use `rounded-xl`/`rounded-2xl`** (creation form, preview cards, list rows).
-- Pills (`rounded-full`) for wallet chips and small status badges on the softer screens.
+- **Industrial / structural surfaces use `rounded-none`** (contract config form, deploy panel) for a milled-plate look.
+- **Titanium & glass cards use `rounded-xl`** (prize ticker, feed, join, timer/stats) or **`rounded-sm`** (referee glass panels, candidate cards).
+- Pills (`rounded-full`) for live dots, avatar frames, progress tracks, and small status indicators.
 
 ### Layout
-- Max content width `1440px` (`container-max`); desktop page margins `40px`, mobile `16px`.
-- App shell: sticky **top nav** (h-20), a **left side-nav** (w-64, sticky, hidden on mobile), and a content area. On mobile the side-nav collapses to a fixed bottom tab bar.
-- Detail/console screens use a 12-column grid (`lg:grid-cols-12`): primary content `col-span-8`, live feed / candidate pool `col-span-4`.
-- Generous internal padding on panels (`p-6` to `p-12`); dense data rows separated by hairline `outline-variant` dividers.
+- Content max width is **`max-w-7xl`** (≈1280px) on dashboard/console screens, `max-w-6xl` for the referee body; full-bleed nav.
+- App shell: sticky **top nav** (px-gutter py-md), a **left side-nav** (`w-64`, sticky, hidden on mobile / collapsing to a bottom action bar), and a content area.
+- Console / dashboard screens use a 12-column grid (`grid-cols-12` / `md:grid-cols-12`): primary content `col-span-7`/`col-span-8`, secondary feed / sidebar `col-span-4`/`col-span-5`. Bento-style nesting within.
+- Custom **4px technical scrollbar**: track `#131313`, thumb `#353534`, thumb-hover `#f7bd48`.
 
 ---
 
@@ -119,122 +126,182 @@ Three roles, two families. Load via Google Fonts: **Sora** (400/600/700/800) and
 
 These are the parts GGG should be remembered by. Reproduce them faithfully.
 
-### Brutalist border
+### Industrial border (structural, with bronze hairline)
 ```css
-.brutalist-border        { border: 2px solid #958ea0; box-shadow: 4px 4px 0 #000; }
-.brutalist-border-active { border-color: #cdf200; box-shadow: 4px 4px 0 #cdf200; }
+.industrial-border { border: 1px solid #353534; position: relative; }
+.industrial-border::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, #f7bd48, transparent);
+  opacity: 0.3;
+}
 ```
-Used on high-stakes panels and cards. The active (acid) variant marks selected/filled/live state.
+A 1px titanium border with a faint bronze gradient hairline along the top edge — the default for config/contract panels. Pair with `.glow-hover` for interactivity.
+
+### Titanium border (plain hard edge)
+```css
+.titanium-border { border: 1px solid #353534; }
+```
+The lighter-weight structural border for cards on the live screens.
+
+### Milled input (recessed machined field)
+```css
+.milled-input {
+  background: #0e0e0e;                 /* #0A0A0A on the referee console */
+  border: 1px solid #353534;          /* #3D3D3D on the referee console */
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+.milled-input:focus {
+  border-color: #f7bd48;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 0 8px rgba(247,189,72,0.2);
+}
+```
+The signature input: a deep recessed well with an inset shadow, machined into the surface. On focus the border lights bronze with a soft outer glow. Numeric/data values inside render in `data-value` (JetBrains Mono).
 
 ### Kinetic glass
 ```css
-.kinetic-glass { background: rgba(32,31,32,0.6); backdrop-filter: blur(12px); border: 2px solid #353436; }
-.glass-panel   { background: #201f20; border: 1px solid #494454; }   /* opaque variant */
+.glass-panel {
+  background: rgba(42,42,42,0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid #3D3D3D;
+}
 ```
-Frosted panels for fluid/secondary content (stat cards, pools, candidate lists, preview cards).
+Frosted panels for fluid/secondary content (candidate lists, settlement preview, status logs, stat cards). Often topped with a 2px bronze accent (`border-t-2 border-t-primary`).
 
-### High-contrast hero card
+### Bronze glow
 ```css
-.high-contrast-card { background: #0e0e0f; border: 2px solid #cdf200; }
-.acid-glow          { box-shadow: 0 0 40px rgba(205,242,0,0.15); }
+.low-glow,
+.glow-hover:hover { box-shadow: 0 0 15px rgba(247,189,72,0.15); }
+.bronze-glow      { box-shadow: 0 0 15px rgba(247,189,72,0.15); }
+.bronze-glow:hover{ box-shadow: 0 0 20px rgba(247,189,72,0.25); }
 ```
-The prize-pool centrepiece: deepest surface, acid border, soft acid glow, optional faint grid overlay, subtle 3D mouse-parallax tilt on hover.
+The low ambient bronze glow applied to primary CTAs and hover states — replaces the old hard offset shadow. Quiet, warm, "powered-on".
 
-### Violet accent edge
+### Bronze gradient (text + buttons)
 ```css
-.violet-accent { border-left: 4px solid #a078ff; }
+.bronze-gradient {           /* hero numbers */
+  background: linear-gradient(180deg, #f7bd48 0%, #ba880f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.bronze-gradient-btn {       /* primary action buttons */
+  background: linear-gradient(180deg, #f7bd48 0%, #ba880f 100%);
+  transition: all 0.2s ease;
+}
 ```
-A 4px violet left-border to flag informational/feature cards.
+A top-to-bottom bronze gradient — clipped to text for the hero prize number, filled for the primary "Deploy" / "Finalize" buttons.
+
+### Winner slot (drag target)
+```css
+.winner-slot { border: 2px dashed #4f4535; transition: all 0.2s ease; }
+.winner-slot.drag-over { border-color: #f7bd48; background: rgba(247,189,72,0.05); }
+```
+Dashed placeholder podium slots in the settlement console; light bronze on drag-over.
 
 ### Buttons
-- **Primary irreversible action** (Deploy / Finalize): solid `electric-violet` / `electric-violet-strong`, near-black or white text, brutalist offset shadow, uppercase, often italic; hover lifts (`translateY(-2px)`, shadow grows to `6px 6px 0`), active presses (`translateY(2px)`, shadow `2px 2px 0`). Disabled drops to ~20% opacity.
-- **Acid CTA** (Connect Wallet on glass screens): `bg-secondary-container` (`#cdf200`/`#D9FF00`) with black text, `rounded-lg`, subtle scale on active.
-- **Secondary**: transparent with `2px outline` border, muted text, fills to `surface-container-highest` on hover.
-- All button labels use `label-caps` (uppercase, mono, wide tracking).
+- **Primary irreversible action** (Connect Wallet / Join Pool / Deploy to Network / Finalize Payouts): solid `bg-primary` (`#f7bd48`) with `on-primary` (`#412d00`) text, **or** `bronze-gradient-btn`; uppercase, wide tracking (`label`/`data-label`), with `bronze-glow`/`low-glow`; hover `brightness-110`, active `scale-95`/`scale-[0.98]`.
+- **Secondary**: transparent / `surface-container-high` with a `1px` outline (`border-surface-variant`, or `border-primary text-primary` for the inverted Connect Wallet); hover brightens or fills.
+- **Tertiary (side-nav launch)**: `surface-variant`/`secondary-container` fill, muted text, uppercase.
+- All button labels are uppercase mono/caption with wide tracking.
 
 ### Badges & chips
-- **LIVE badge:** small acid-yellow fill, black text, `label-caps`, sometimes paired with a pulsing dot.
-- **Wallet chip:** `surface-container-high` pill or `2px outline` box, wallet icon + truncated `G…`/`0x…` address in `data-mono`, acid- or violet-tinted.
-- **Status chips:** active = acid border/text; finished = muted; cancelled = error tint.
+- **LIVE / REAL-TIME badge:** small bronze-tinted fill (`bg-primary/10 text-primary border border-primary/20`), `data-label`, often paired with a pulsing dot (`bg-error` or `bg-primary animate-pulse`).
+- **Wallet chip:** milled or `surface-container-high` box, wallet glyph + truncated `0x…` address in `data-value`, bronze-tinted.
+- **Status chips:** ready = `secondary` peach (`READY_FOR_COMPILATION`); active = bronze; locked = `bg-primary/20 text-primary`; finished = muted; cancelled = error tint.
 
 ### Inputs
-- `surface-container-low` background, `outline-variant` border, `rounded-xl`, generous padding.
-- **Focus:** border switches to `electric-violet-strong` with a 1px violet ring; the field's wrapper may scale `1.01` for a kinetic micro-interaction. Numeric/data inputs (entry fee, splits) render their value in `data-mono`, acid-tinted.
+- `milled-input` background (`#0e0e0e`/`#0A0A0A`), 1px `#353534`/`#3D3D3D` border, inset shadow, generous `p-md`.
+- **Focus:** border → bronze `#f7bd48` with a soft outer glow; the field's mono label brightens to bronze via JS micro-interaction.
+- Numeric/data inputs (entry fee, splits) render their value in `data-value`, with a unit chip ("LUMEN") appended in a bordered box.
 
 ---
 
 ## 6. Motion
 
-Motion reinforces "live and on-chain" — keep it purposeful, and respect `prefers-reduced-motion`.
+Motion reinforces "live, on-chain, machined" — keep it purposeful, and respect `prefers-reduced-motion`.
 
 | Name | Behaviour | Where |
 |---|---|---|
-| `glow-pulse-acid` | 1.5s alternating acid box-shadow glow (5px→20px) | Live status dots. |
-| `pulse-live` | 2s opacity/scale pulse | "LIVE" indicators, countdown seconds, live address dots. |
-| `ticker-scroll` | 30s linear vertical loop | Registration feed ticker. |
-| Hero parallax | Mouse-driven `perspective(1000px) rotateX/Y` tilt | High-contrast prize card. |
-| Live counter | Prize number ticks up with a brief `scale(1.05)` pop | Live pool. |
-| Drag-and-drop | Cards are `cursor: grab`; on grab `translate(2px,2px)` + reduced shadow; drop zones highlight to acid (`drop-zone-active`) | Settlement console. |
-| Button press | Lift on hover, press on active via translate + shadow swap | Primary buttons. |
-| Settlement modal | Full-screen blurred overlay, spinning acid ring, animated progress bar, status text ("SIGNING…") | Finalisation in progress. |
+| Live pulse | `animate-pulse` opacity loop on dots | LIVE indicators, "secure" dots, status-log heartbeat, idle 1st-place glyph. |
+| Prize ticker | Number ticks up every ~3s with a brief `scale-[1.01]` pop | Live global prize pool. |
+| Countdown | 1s tick on Hrs/Min/Sec, live seconds tinted bronze | Pool-closes-in timer. |
+| Feed stream | New entries `prepend` with `fade-in slide-in-from-left duration-500`; trailing items fade to `opacity-60` | Live activity / registration feed. |
+| Glow-hover | Bronze `0 0 15px` glow grows on hover | Industrial panels, CTAs. |
+| Label focus | Mono input label brightens to bronze on field focus | Milled inputs. |
+| Drag-and-drop | Cards are `cursor: grab`; on grab `scale(0.98)` + `opacity-50`; slots highlight to bronze (`.drag-over`); drop swaps to a "PLAYER SELECTED / VERIFYING DATA…" state | Settlement console. |
+| Button press | `brightness-110` hover, `scale-95`/`scale-[0.98]` active | Primary buttons. |
+| Settlement modal | Full-screen `bg-background/90` overlay, spinning bronze ring (`border-primary border-t-transparent animate-spin`), scrolling proof log, pulsing "Estimated Time" | Finalisation in progress. |
 
 ---
 
 ## 7. Iconography & imagery
 
-- **Material Symbols Outlined** throughout (e.g. `account_balance_wallet`, `sports_esports`, `gavel`, `workspace_premium`, `military_tech`, `stars`, `verified_user`, `token`, `shield`, `terminal`). Active/selected icons use `FILL 1`.
-- Player/avatar imagery sits in **2px-bordered square frames** (no rounding), often **grayscale by default, de-saturating to full color on hover** — reinforcing the "candidate becomes selected" idea.
-- Decorative grid overlays (40px) at low opacity add a "ledger/terminal" texture behind hero numbers.
-- QR codes render on a **white padded tile** for scan reliability, set inside a glass or violet-accented card.
+- **Material Symbols Outlined** throughout (e.g. `account_balance_wallet`, `sports_esports`, `emoji_events`, `military_tech`, `verified_user`, `token`, `rocket_launch`, `code`, `groups`, `drag_indicator`, `terminal`, `dashboard`, `settings`). Active/selected icons use `FILL 1` (`.fill-icon`).
+- Player/avatar imagery sits in **rounded square or pill frames** with a 1px bronze/outline border; the aesthetic is **technical-noir**: low-key industrial lighting, polished carbon fibre and titanium, burnt-bronze accents, shallow depth of field. Banner imagery defaults to `grayscale brightness-50`, lifting on hover (`group-hover:scale-105`).
+- **Contract source** renders in a near-black (`#0a0a0a`) pane with JetBrains Mono syntax coloring: keywords `primary` bronze, comments/strings `secondary` peach, type names `tertiary` blue.
+- QR codes render on a **white padded tile** (`bg-white p-sm`, `mix-blend-multiply`) for scan reliability, set inside a milled card.
 
 ---
 
 ## 8. Voice & microcopy
 
-- **Plain, decisive, terminal-flavoured.** Active voice. Buttons name the exact effect: "Deploy Soroban Contract", "Finalize Payouts", "Connect Wallet". The action keeps its name through the flow (a "Finalize" button leads to a "Settlement Success" result).
-- **On-chain literacy is part of the brand:** show real artifacts — contract IDs, tx hashes, ledger language, "escrow", "settlement", "verified", basis-point splits — but always with a human-readable gloss next to the raw value.
-- **All-caps mono** for labels and system status; **sentence case** for explanatory body copy.
-- Errors and empty states speak in the interface's voice: explain what happened and the next step, never vague, never apologetic. An empty tournament list invites "Create your first tournament."
-- Numbers are honest and precise: amounts in `data-mono`, split percentages shown both as % (UI) and basis points (contract).
+- **Plain, decisive, terminal-flavoured.** Active voice. Buttons name the exact effect: "Deploy to Network", "Finalize Payouts", "Join Pool Now", "Connect Wallet". The action keeps its name through the flow (a "Finalize" button leads to a "Settling Chain" overlay → settlement result).
+- **On-chain literacy is part of the brand:** show real artifacts — contract IDs, tx hashes, Merkle proofs, ledger/block height, "escrow", "settlement", "validators", basis-point and percentage splits, platform fee, gas strategy — but always with a human-readable gloss next to the raw value.
+- **Two chains appear in the mocks:** the Creator and Live Prize Pool speak **Stellar / Soroban** ("Deploy Soroban Contract", `XLM`/`LUMEN`, `deploy_escrow`), while the Referee Console speaks **Ethereum L2** (`ETH`, Merkle proof, mainnet RPC). Keep on-chain language accurate to whichever network a screen settles on; don't mix them within one flow.
+- **All-caps mono** for labels and system status (`READY_FOR_COMPILATION`, `NETWORK_TELEMETRY`, `VALIDATOR_STATUS: OPTIMAL`); **sentence case** for explanatory body copy.
+- Errors and empty states speak in the interface's voice: explain what happened and the next step, never vague, never apologetic (e.g. "[Awaiting Final Winner Selection…]").
+- Numbers are honest and precise: amounts in `data-value`, split percentages shown both as % (UI) and basis points / contract logic (e.g. 60/30/10 distribution echoed in the Soroban source).
 
 ---
 
-## 9. Tailwind v4 implementation note
+## 9. Tailwind implementation note
 
-Translate the mock's `tailwind.config` into a CSS-first `@theme` block (Tailwind v4 has no required JS config):
+The mocks ship a JS `tailwind.config` (`darkMode: "class"`). Mirror it exactly — colors, the four-step `borderRadius`, the named `spacing` scale, and the `fontFamily`/`fontSize` roles below. (For Tailwind v4, translate the same values into a CSS-first `@theme` block; there is no behavioural difference.)
 
-```css
-@import "tailwindcss";
-
-@theme {
-  --color-background: #131314;
-  --color-acid-yellow: #cdf200;
-  --color-electric-violet: #a078ff;
-  --color-electric-violet-strong: #8B5CF6;
-  --color-primary: #d0bcff;
-  --color-surface-container: #201f20;
-  --color-surface-container-low: #1c1b1c;
-  --color-surface-container-lowest: #0e0e0f;
-  --color-surface-container-high: #2a2a2b;
-  --color-surface-container-highest: #353436;
-  --color-on-surface: #e5e2e3;
-  --color-on-surface-variant: #cbc3d7;
-  --color-outline: #958ea0;
-  --color-outline-variant: #494454;
-  --color-error: #ffb4ab;
-  /* …complete with the full table in §2… */
-
-  --font-display: "Sora", sans-serif;
-  --font-body: "Sora", sans-serif;
-  --font-mono: "Space Mono", monospace;
-
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-
-  --spacing-gutter: 16px;
-  --spacing-margin-desktop: 40px;
-  --spacing-container-max: 1440px;
+```js
+tailwind.config = {
+  darkMode: "class",
+  theme: { extend: {
+    colors: {
+      background: "#131313", surface: "#131313",
+      primary: "#f7bd48", "primary-fixed-dim": "#f7bd48", "surface-tint": "#f7bd48",
+      "primary-container": "#ba880f", "primary-fixed": "#ffdea6",
+      "on-primary": "#412d00", "on-primary-container": "#392700",
+      secondary: "#fbb980", "secondary-fixed-dim": "#fbb980",
+      "secondary-container": "#693c0e", "on-secondary-container": "#e7a871",
+      tertiary: "#a1c9ff", "tertiary-fixed-dim": "#a1c9ff", "tertiary-container": "#5594db",
+      "surface-container-lowest": "#0e0e0e", "surface-container-low": "#1c1b1b",
+      "surface-container": "#201f1f", "surface-container-high": "#2a2a2a",
+      "surface-container-highest": "#353534", "surface-variant": "#353534",
+      "surface-bright": "#393939",
+      "on-surface": "#e5e2e1", "on-background": "#e5e2e1",
+      "on-surface-variant": "#d3c4af",
+      outline: "#9c8f7b", "outline-variant": "#4f4535",
+      error: "#ffb4ab", "error-container": "#93000a",
+      "on-error": "#690005", "on-error-container": "#ffdad6",
+      /* …complete with the full table in §2… */
+    },
+    borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+    spacing: { xs:"4px", sm:"8px", base:"8px", md:"16px", lg:"24px", gutter:"24px", margin:"32px", xl:"48px" },
+    fontFamily: {
+      "display-lg": ["Sora"], "headline-lg": ["Sora"], "headline-md": ["Sora"],
+      "headline-lg-mobile": ["Sora"], "body-lg": ["Sora"], "body-md": ["Sora"], caption: ["Sora"],
+      "data-label": ["JetBrains Mono"], "data-value": ["JetBrains Mono"],
+    },
+    fontSize: {
+      "display-lg": ["48px", { lineHeight:"1.1", letterSpacing:"-0.02em", fontWeight:"800" }],
+      "headline-lg": ["32px", { lineHeight:"1.2", fontWeight:"700" }],
+      "headline-md": ["24px", { lineHeight:"1.3", fontWeight:"600" }],
+      "headline-lg-mobile": ["24px", { lineHeight:"1.2", fontWeight:"700" }],
+      "body-lg": ["18px", { lineHeight:"1.6", fontWeight:"400" }],
+      "body-md": ["16px", { lineHeight:"1.5", fontWeight:"400" }],
+      "data-value": ["14px", { lineHeight:"1.2", fontWeight:"700" }],
+      "data-label": ["14px", { lineHeight:"1.2", letterSpacing:"0.05em", fontWeight:"500" }],
+      caption: ["12px", { lineHeight:"1.4", fontWeight:"500" }],
+    },
+  }},
 }
 ```
 
-Signature classes (`.brutalist-border`, `.kinetic-glass`, `.high-contrast-card`, `.acid-glow`, `.violet-accent`, the keyframes) live in a global stylesheet exactly as in the mock. Keep the dark theme as the default (`<html class="dark">`); GGG ships dark-only.
+Signature classes (`.industrial-border`, `.titanium-border`, `.milled-input`, `.glass-panel`, `.bronze-gradient`, `.bronze-gradient-btn`, `.bronze-glow`/`.low-glow`/`.glow-hover`, `.winner-slot`, the custom scrollbar, and the keyframes) live in a global stylesheet exactly as in the mock. Keep the dark theme as the default (`<html class="dark">`); GGG ships dark-only.

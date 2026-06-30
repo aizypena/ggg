@@ -137,7 +137,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={pending}
-            className="label-caps mt-2 rounded-lg bg-electric-violet-strong px-6 py-3 text-white transition hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-acid-yellow disabled:cursor-not-allowed disabled:opacity-60"
+            className="label-caps mt-2 rounded-lg bg-electric-violet-strong px-6 py-3 text-on-primary transition hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-acid-yellow disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pending ? "Creating account…" : "Create account"}
           </button>

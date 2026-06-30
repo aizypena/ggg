@@ -27,17 +27,17 @@
    the type scale, spacing, radius, and animations — lives here. */
 @theme {
   /* Brand accents (new canonical) */
-  --color-primary-container: #ba880f;       /* deep bronze — dark stop of the bronze gradient; hover/active fills */
-  --color-primary-fixed: #ffdea6;           /* light amber for subtle valuation / sub-labels */
+  --color-primary-container: #ba880f; /* deep bronze — dark stop of the bronze gradient; hover/active fills */
+  --color-primary-fixed: #ffdea6; /* light amber for subtle valuation / sub-labels */
   --color-primary-fixed-dim: #f7bd48;
   --color-surface-tint: #f7bd48;
-  --color-on-primary: #412d00;               /* near-black-brown text ON bronze fills — never white */
-  --color-on-primary-container: #392700;     /* text on deep-bronze containers */
-  --color-secondary-container: #693c0e;     /* bronze-brown fill for the active nav item */
-  --color-on-secondary-container: #e7a871;  /* text/icons on the active nav fill */
-  --color-tertiary: #a1c9ff;                  /* cool blue — code syntax (type names) + rare informational contrast */
+  --color-on-primary: #412d00; /* near-black-brown text ON bronze fills — never white */
+  --color-on-primary-container: #392700; /* text on deep-bronze containers */
+  --color-secondary-container: #693c0e; /* bronze-brown fill for the active nav item */
+  --color-on-secondary-container: #e7a871; /* text/icons on the active nav fill */
+  --color-tertiary: #a1c9ff; /* cool blue — code syntax (type names) + rare informational contrast */
   --color-tertiary-fixed-dim: #a1c9ff;
-  --color-tertiary-container: #5594db;        /* informational blue container (rare) */
+  --color-tertiary-container: #5594db; /* informational blue container (rare) */
 
   /* Legacy brand-name aliases → bronze.
      The old system split "acid-yellow" (brand) and "electric-violet" (action)
@@ -47,16 +47,16 @@
      new palette without a 35-file rename. */
   --color-acid-yellow: #f7bd48;
   --color-acid-yellow-bright: #f7bd48;
-  --color-secondary-fixed-dim: #fbb980;      /* warm peach — status/READY accents (new spec value) */
-  --color-electric-violet: #f7bd48;           /* was action accent → bronze */
-  --color-electric-violet-strong: #f7bd48;    /* was solid-button fill → bronze */
-  --color-inverse-primary: #ba880f;           /* was deep violet → deep bronze */
+  --color-secondary-fixed-dim: #fbb980; /* warm peach — status/READY accents (new spec value) */
+  --color-electric-violet: #f7bd48; /* was action accent → bronze */
+  --color-electric-violet-strong: #f7bd48; /* was solid-button fill → bronze */
+  --color-inverse-primary: #ba880f; /* was deep violet → deep bronze */
 
   /* Surfaces (dark carbon ramp) */
   --color-surface: #131313;
   --color-surface-dim: #131313;
-  --color-background-deep: #0a0a0a;          /* code/terminal panes + milled-input floor */
-  --color-surface-container-lowest: #0e0e0e;  /* milled-input floor, deepest panels */
+  --color-background-deep: #0a0a0a; /* code/terminal panes + milled-input floor */
+  --color-surface-container-lowest: #0e0e0e; /* milled-input floor, deepest panels */
   --color-surface-container-low: #1c1b1b;
   --color-surface-container: #201f1f;
   --color-surface-container-high: #2a2a2a;
@@ -67,12 +67,12 @@
   /* Text & lines (warm taupe/bronze) */
   --color-on-surface: #e5e2e1;
   --color-on-background: #e5e2e1;
-  --color-on-surface-variant: #d3c4af;        /* secondary / muted text */
-  --color-outline: #9c8f7b;                   /* default borders, muted labels, drop-zone glyphs */
-  --color-outline-variant: #4f4535;          /* hairline dividers, dashed winner-slot borders */
+  --color-on-surface-variant: #d3c4af; /* secondary / muted text */
+  --color-outline: #9c8f7b; /* default borders, muted labels, drop-zone glyphs */
+  --color-outline-variant: #4f4535; /* hairline dividers, dashed winner-slot borders */
 
   /* Semantic / state */
-  --color-error: #ffb4ab;                     /* error text / "remove" affordances, idle status dots */
+  --color-error: #ffb4ab; /* error text / "remove" affordances, idle status dots */
   --color-error-container: #93000a;
   --color-on-error: #690005;
   --color-on-error-container: #ffdad6;
@@ -256,7 +256,9 @@ body {
 .milled-input:focus {
   border-color: #f7bd48;
   outline: none;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 8px rgba(247, 189, 72, 0.2);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 8px rgba(247, 189, 72, 0.2);
 }
 
 /* Kinetic glass — frosted panels for fluid/secondary content. (Legacy alias

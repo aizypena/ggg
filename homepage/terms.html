@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Terms of Use — GGG · Good Game Guild</title>
+    <meta
+      name="description"
+      content="Terms of Use for GGG (Good Game Guild) — a trustless tournament prize-escrow protocol on Stellar Soroban, operated by Artisam Labs."
+    />
+    <meta name="theme-color" content="#131313" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --background: #131313;
+        --surface: #131313;
+        --surface-dim: #131313;
+        --surface-container-lowest: #0e0e0e;
+        --surface-container-low: #1c1b1b;
+        --surface-container: #201f1f;
+        --surface-container-high: #2a2a2a;
+        --surface-container-highest: #353534;
+        --surface-variant: #353534;
+        --primary: #f7bd48;
+        --primary-container: #ba880f;
+        --on-primary: #412d00;
+        --secondary: #fbb980;
+        --tertiary: #a1c9ff;
+        --on-surface: #e5e2e1;
+        --on-surface-variant: #d3c4af;
+        --outline: #9c8f7b;
+        --outline-variant: #4f4535;
+        --error: #ffb4ab;
+        --error-container: #93000a;
+        --on-error-container: #ffdad6;
+        --radius: 0.25rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-full: 9999px;
+        --space-sm: 8px;
+        --space-md: 16px;
+        --space-lg: 24px;
+        --space-gutter: 24px;
+        --space-xl: 48px;
+        --maxw: 1280px;
+        --bronze-gradient: linear-gradient(180deg, #f7bd48 0%, #ba880f 100%);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--on-surface);
+        font-family: "Sora", system-ui, sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: var(--primary);
+      }
+      .mono {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+      }
+      .mat {
+        font-family: "Material Symbols Outlined";
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+        display: inline-block;
+        line-height: 1;
+      }
+      .container {
+        max-width: var(--maxw);
+        margin-inline: auto;
+        padding-inline: var(--space-gutter);
+      }
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(19, 19, 19, 0.85);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--surface-variant);
+      }
+      .nav::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -1px;
+        height: 1px;
+        width: 100%;
+        background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        opacity: 0.3;
+      }
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-lg);
+        padding-block: var(--space-md);
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--on-surface);
+        text-decoration: none;
+      }
+      .brand-logo {
+        height: 40px;
+        width: 40px;
+        object-fit: cover;
+        border-radius: var(--radius);
+        border: 1px solid var(--surface-variant);
+      }
+      .brand-word {
+        display: flex;
+        flex-direction: column;
+        line-height: 1;
+      }
+      .brand-word .title {
+        font-weight: 800;
+        font-size: 18px;
+      }
+      .brand-word .sub {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: var(--on-surface-variant);
+        margin-top: 3px;
+      }
+      .back-link {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--on-surface-variant);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .back-link:hover {
+        color: var(--primary);
+      }
+      .doc {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: var(--space-xl);
+        padding-block: 56px 80px;
+      }
+      .toc {
+        position: sticky;
+        top: 96px;
+        align-self: start;
+      }
+      .toc h4 {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--on-surface-variant);
+        margin: 0 0 14px;
+      }
+      .toc ul {
+        list-style: none;
+        margin: 0;
+        padding: 0 0 0 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        border-left: 1px solid var(--outline-variant);
+      }
+      .toc a {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--on-surface-variant);
+        text-decoration: none;
+        letter-spacing: 0.04em;
+      }
+      .toc a:hover {
+        color: var(--primary);
+      }
+      .article {
+        max-width: 760px;
+      }
+      .eyebrow {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--primary);
+      }
+      .article h1 {
+        font-size: clamp(28px, 4vw, 40px);
+        line-height: 1.15;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin: 12px 0 8px;
+      }
+      .updated {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        color: var(--on-surface-variant);
+        margin-bottom: 32px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--outline-variant);
+      }
+      .article h2 {
+        font-size: 22px;
+        font-weight: 700;
+        margin: 40px 0 12px;
+        scroll-margin-top: 90px;
+      }
+      .article p,
+      .article li {
+        color: var(--on-surface-variant);
+        line-height: 1.7;
+      }
+      .article p {
+        margin: 0 0 14px;
+      }
+      .article ul,
+      .article ol {
+        padding-left: 22px;
+        margin: 0 0 16px;
+      }
+      .article li {
+        margin-bottom: 8px;
+      }
+      .article strong {
+        color: var(--on-surface);
+        font-weight: 600;
+      }
+      .article a {
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+      code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--primary);
+        background: var(--surface-container-high);
+        padding: 2px 6px;
+        border-radius: var(--radius);
+        border: 1px solid var(--surface-variant);
+      }
+      .callout {
+        margin: 24px 0;
+        padding: 18px 22px;
+        background: rgba(147, 0, 10, 0.08);
+        border: 1px solid rgba(255, 180, 171, 0.25);
+        border-left: 3px solid var(--error);
+        border-radius: var(--radius-lg);
+        font-size: 15px;
+        color: var(--on-surface-variant);
+      }
+      .callout .head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .callout .head .mat {
+        color: var(--error);
+      }
+      .callout strong {
+        color: var(--error);
+      }
+      footer {
+        border-top: 1px solid var(--surface-variant);
+        background: var(--surface-dim);
+      }
+      .footer-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--space-md);
+        flex-wrap: wrap;
+        padding-block: var(--space-lg);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: var(--on-surface-variant);
+      }
+      .footer-bottom .links {
+        display: flex;
+        gap: var(--space-lg);
+      }
+      .footer-bottom a {
+        color: var(--on-surface-variant);
+        text-decoration: none;
+      }
+      .footer-bottom a:hover {
+        color: var(--primary);
+      }
+      @media (max-width: 860px) {
+        .doc {
+          grid-template-columns: 1fr;
+          gap: 0;
+        }
+        .toc {
+          display: none;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition-duration: 0.001ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="nav">
+      <div class="container nav-inner">
+        <a class="brand" href="index.html" aria-label="GGG — Good Game Guild home">
+          <img class="brand-logo" src="LOGO.jpg" alt="GGG logo" />
+          <span class="brand-word">
+            <span class="title">GGG</span>
+            <span class="sub">Good Game Guild</span>
+          </span>
+        </a>
+        <a class="back-link" href="index.html">
+          <span class="mat" aria-hidden="true">arrow_back</span> Back to site
+        </a>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="doc">
+        <aside class="toc" aria-label="Contents">
+          <h4>// Contents</h4>
+          <ul>
+            <li><a href="#accept">1 · Acceptance</a></li>
+            <li><a href="#use">2 · Use of the Service</a></li>
+            <li><a href="#services">3 · The Protocol</a></li>
+            <li><a href="#ip">4 · Intellectual Property</a></li>
+            <li><a href="#submissions">5 · User Submissions</a></li>
+            <li><a href="#web3">6 · Web3 &amp; Blockchain Risk</a></li>
+            <li><a href="#links">7 · Third-Party Links</a></li>
+            <li><a href="#liability">8 · Limitation of Liability</a></li>
+            <li><a href="#indemnity">9 · Indemnification</a></li>
+            <li><a href="#law">10 · Governing Law</a></li>
+            <li><a href="#changes">11 · Changes</a></li>
+            <li><a href="#contact">12 · Contact</a></li>
+          </ul>
+        </aside>
+
+        <article class="article">
+          <span class="eyebrow">// Legal</span>
+          <h1>Terms of Use</h1>
+          <p class="updated">Last updated: June 30, 2026 · Operator: Artisam Labs</p>
+
+          <h2 id="accept">1. Acceptance of Terms</h2>
+          <p>
+            By accessing or using GGG — Good Game Guild (the "Service"), including this website and
+            the hosted web application at app.ggg.quest, you agree to be bound by these Terms. If
+            you do not agree, you should not use the Service.
+          </p>
+
+          <h2 id="use">2. Use of the Service</h2>
+          <p>You agree not to:</p>
+          <ul>
+            <li>infringe the rights of any other user or third party;</li>
+            <li>transmit malware, viruses, or harmful code;</li>
+            <li>attempt unauthorised access to the Service or its infrastructure;</li>
+            <li>misrepresent your identity or your wallet's ownership;</li>
+            <li>scrape, crawl, or harvest data in violation of these Terms or of rate limits;</li>
+            <li>use the Service for any unlawful purpose or in violation of any applicable law.</li>
+          </ul>
+
+          <h2 id="services">3. The Protocol</h2>
+          <p>
+            GGG is a non-custodial protocol on the Stellar Soroban network for creating
+            prize-escrow tournaments. The Service lets organisers create tournaments, players join
+            by paying an entry fee, and referees submit final rankings, after which a smart contract
+            auto-settles payouts. Artisam Labs reserves the right to modify, suspend, or
+            discontinue any feature at any time. Tournament participation is subject to the rules
+            set by each organiser.
+          </p>
+
+          <h2 id="ip">4. Intellectual Property</h2>
+          <p>
+            All software, design, text, branding, and graphics of this website belong to Artisam
+            Labs or its licensors and are protected by applicable laws. You may not reproduce,
+            distribute, or create derivative works without prior written consent, except for
+            personal, non-commercial use. The smart-contract source, where published, is licensed
+            as stated in its repository.
+          </p>
+
+          <h2 id="submissions">5. User Submissions</h2>
+          <p>
+            Tournament names, game titles, and any content you submit grant Artisam Labs a
+            non-exclusive, royalty-free license to use, display, and distribute that content solely
+            to operate the Service (including broadcasting it on-chain). You confirm you own or have
+            the right to submit it, and that it does not violate third-party rights. Do not include
+            personal data in on-chain fields — once submitted, it is public and immutable.
+          </p>
+
+          <h2 id="web3">6. Web3 &amp; Blockchain Risk Disclaimer</h2>
+          <div class="callout">
+            <div class="head">
+              <span class="mat" aria-hidden="true">warning</span>
+              <strong>Read this carefully.</strong>
+            </div>
+            <p style="margin: 0">
+              Blockchain transactions are <strong>irreversible</strong>. Once a transaction is
+              signed and submitted to the Stellar network, it cannot be reversed, cancelled, or
+              modified — by you or by us. Digital assets carry risks including market volatility,
+              smart-contract bugs or exploits, network congestion, and regulatory uncertainty.
+              Artisam Labs provides the Service <strong>as-is, for utility and competition purposes
+              only</strong> — it is not financial, investment, or legal advice, and no part of the
+              Service constitutes an offer to sell or a solicitation to buy any asset. You are
+              solely responsible for your wallet, your private keys, your transactions, and any tax
+              obligations that arise from using the Service. <strong>Never share your private keys
+              or seed phrase</strong> — Artisam Labs will never ask for them.
+            </p>
+          </div>
+
+          <h2 id="links">7. Third-Party Links</h2>
+          <p>
+            The Service links to or interacts with third-party tools (the Stellar network, Stellar
+            Explorer, Freighter and other SEP-7 wallets, and your web browser). These are provided
+            for convenience. Artisam Labs does not endorse and is not responsible for the content,
+            practices, or reliability of any third-party service.
+          </p>
+
+          <h2 id="liability">8. Limitation of Liability</h2>
+          <p>
+            To the maximum extent permitted by law, Artisam Labs and its affiliates shall not be
+            liable for any indirect, incidental, special, consequential, or exemplary damages
+            arising out of or in connection with your use of, or inability to use, the Service —
+            including loss of digital assets, loss of data, loss of profits, or business
+            interruption — whether based on contract, tort, or any other theory, even if advised of
+            the possibility of such damages. The Service is non-custodial: we never hold your funds,
+            and we are not liable for on-chain outcomes you authorise.
+          </p>
+
+          <h2 id="indemnity">9. Indemnification</h2>
+          <p>
+            You agree to indemnify and hold harmless Artisam Labs and its affiliates from any claim,
+            loss, or damage arising out of your use of the Service, your violation of these Terms,
+            or your infringement of any third-party right — including any loss arising from
+            transactions you authorise with your own wallet.
+          </p>
+
+          <h2 id="law">10. Governing Law</h2>
+          <p>
+            These Terms are governed by the laws applicable to Artisam Labs' place of
+            incorporation, without regard to conflict-of-law principles. You submit to the exclusive
+            jurisdiction of the competent courts of that jurisdiction for any dispute arising from
+            these Terms or the Service.
+          </p>
+
+          <h2 id="changes">11. Changes to These Terms</h2>
+          <p>
+            Artisam Labs may update these Terms at any time by posting a revised version on this
+            page with a new "Last updated" date. Continued use of the Service after changes
+            constitutes acceptance of the revised Terms.
+          </p>
+
+          <h2 id="contact">12. Contact</h2>
+          <p>
+            Questions about these Terms? Email
+            <a href="mailto:ggg@artisam.xyz">ggg@artisam.xyz</a>, or visit
+            <a href="https://artisam.xyz" target="_blank" rel="noopener">artisam.xyz</a>.
+          </p>
+        </article>
+      </div>
+    </div>
+
+    <footer>
+      <div class="container">
+        <div class="footer-bottom">
+          <span>© <span class="mono" id="year">2026</span> GGG · Good Game Guild · Built by Artisam Labs</span>
+          <div class="links">
+            <a href="index.html">Home</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="https://app.ggg.quest" target="_blank" rel="noopener">app.ggg.quest</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      var y = document.getElementById("year");
+      if (y) y.textContent = String(new Date().getFullYear());
+    </script>
+  </body>
+</html>

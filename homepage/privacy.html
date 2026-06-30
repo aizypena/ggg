@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy Policy — GGG · Good Game Guild</title>
+    <meta
+      name="description"
+      content="Privacy Policy for GGG (Good Game Guild) — a trustless tournament prize-escrow protocol on Stellar Soroban, operated by Artisam Labs."
+    />
+    <meta name="theme-color" content="#131313" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --background: #131313;
+        --surface: #131313;
+        --surface-dim: #131313;
+        --surface-container-lowest: #0e0e0e;
+        --surface-container-low: #1c1b1b;
+        --surface-container: #201f1f;
+        --surface-container-high: #2a2a2a;
+        --surface-container-highest: #353534;
+        --surface-variant: #353534;
+        --primary: #f7bd48;
+        --primary-container: #ba880f;
+        --on-primary: #412d00;
+        --secondary: #fbb980;
+        --tertiary: #a1c9ff;
+        --on-surface: #e5e2e1;
+        --on-surface-variant: #d3c4af;
+        --outline: #9c8f7b;
+        --outline-variant: #4f4535;
+        --error: #ffb4ab;
+        --radius: 0.25rem;
+        --radius-lg: 0.5rem;
+        --radius-xl: 0.75rem;
+        --radius-full: 9999px;
+        --space-sm: 8px;
+        --space-md: 16px;
+        --space-lg: 24px;
+        --space-gutter: 24px;
+        --space-xl: 48px;
+        --maxw: 1280px;
+        --bronze-gradient: linear-gradient(180deg, #f7bd48 0%, #ba880f 100%);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--on-surface);
+        font-family: "Sora", system-ui, sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: var(--primary);
+      }
+      .mono {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+      }
+      .mat {
+        font-family: "Material Symbols Outlined";
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+        display: inline-block;
+        line-height: 1;
+      }
+      .container {
+        max-width: var(--maxw);
+        margin-inline: auto;
+        padding-inline: var(--space-gutter);
+      }
+
+      /* Nav */
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(19, 19, 19, 0.85);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--surface-variant);
+      }
+      .nav::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -1px;
+        height: 1px;
+        width: 100%;
+        background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        opacity: 0.3;
+      }
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-lg);
+        padding-block: var(--space-md);
+      }
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--on-surface);
+        text-decoration: none;
+      }
+      .brand-logo {
+        height: 40px;
+        width: 40px;
+        object-fit: cover;
+        border-radius: var(--radius);
+        border: 1px solid var(--surface-variant);
+      }
+      .brand-word {
+        display: flex;
+        flex-direction: column;
+        line-height: 1;
+      }
+      .brand-word .title {
+        font-weight: 800;
+        font-size: 18px;
+      }
+      .brand-word .sub {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: var(--on-surface-variant);
+        margin-top: 3px;
+      }
+      .back-link {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--on-surface-variant);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .back-link:hover {
+        color: var(--primary);
+      }
+
+      /* Doc layout */
+      .doc {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: var(--space-xl);
+        padding-block: 56px 80px;
+      }
+      .toc {
+        position: sticky;
+        top: 96px;
+        align-self: start;
+      }
+      .toc h4 {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--on-surface-variant);
+        margin: 0 0 14px;
+      }
+      .toc ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        border-left: 1px solid var(--outline-variant);
+        padding-left: 16px;
+      }
+      .toc a {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--on-surface-variant);
+        text-decoration: none;
+        letter-spacing: 0.04em;
+      }
+      .toc a:hover {
+        color: var(--primary);
+      }
+
+      .article {
+        max-width: 760px;
+      }
+      .eyebrow {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--primary);
+      }
+      .article h1 {
+        font-size: clamp(28px, 4vw, 40px);
+        line-height: 1.15;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin: 12px 0 8px;
+      }
+      .updated {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        color: var(--on-surface-variant);
+        margin-bottom: 32px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--outline-variant);
+      }
+      .article h2 {
+        font-size: 22px;
+        font-weight: 700;
+        margin: 40px 0 12px;
+        scroll-margin-top: 90px;
+      }
+      .article h3 {
+        font-size: 17px;
+        font-weight: 600;
+        margin: 24px 0 8px;
+        color: var(--on-surface);
+      }
+      .article p,
+      .article li {
+        color: var(--on-surface-variant);
+        line-height: 1.7;
+      }
+      .article p {
+        margin: 0 0 14px;
+      }
+      .article ul,
+      .article ol {
+        padding-left: 22px;
+        margin: 0 0 16px;
+      }
+      .article li {
+        margin-bottom: 8px;
+      }
+      .article strong {
+        color: var(--on-surface);
+        font-weight: 600;
+      }
+      .article a {
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+      .callout {
+        margin: 24px 0;
+        padding: 18px 22px;
+        background: rgba(247, 189, 72, 0.05);
+        border: 1px solid rgba(247, 189, 72, 0.2);
+        border-left: 3px solid var(--primary);
+        border-radius: var(--radius-lg);
+        font-size: 15px;
+        color: var(--on-surface-variant);
+      }
+      .callout strong {
+        color: var(--primary);
+      }
+      code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--primary);
+        background: var(--surface-container-high);
+        padding: 2px 6px;
+        border-radius: var(--radius);
+        border: 1px solid var(--surface-variant);
+      }
+
+      /* Footer (shared minimal) */
+      footer {
+        border-top: 1px solid var(--surface-variant);
+        background: var(--surface-dim);
+      }
+      .footer-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--space-md);
+        flex-wrap: wrap;
+        padding-block: var(--space-lg);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: var(--on-surface-variant);
+      }
+      .footer-bottom .links {
+        display: flex;
+        gap: var(--space-lg);
+      }
+      .footer-bottom a {
+        color: var(--on-surface-variant);
+        text-decoration: none;
+      }
+      .footer-bottom a:hover {
+        color: var(--primary);
+      }
+
+      @media (max-width: 860px) {
+        .doc {
+          grid-template-columns: 1fr;
+          gap: 0;
+        }
+        .toc {
+          display: none;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition-duration: 0.001ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="nav">
+      <div class="container nav-inner">
+        <a class="brand" href="index.html" aria-label="GGG — Good Game Guild home">
+          <img class="brand-logo" src="LOGO.jpg" alt="GGG logo" />
+          <span class="brand-word">
+            <span class="title">GGG</span>
+            <span class="sub">Good Game Guild</span>
+          </span>
+        </a>
+        <a class="back-link" href="index.html">
+          <span class="mat" aria-hidden="true">arrow_back</span> Back to site
+        </a>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="doc">
+        <aside class="toc" aria-label="Contents">
+          <h4>// Contents</h4>
+          <ul>
+            <li><a href="#intro">1 · Introduction</a></li>
+            <li><a href="#collect">2 · Information We Collect</a></li>
+            <li><a href="#use">3 · How We Use It</a></li>
+            <li><a href="#share">4 · Sharing</a></li>
+            <li><a href="#onchain">5 · On-Chain Data</a></li>
+            <li><a href="#retain">6 · Retention</a></li>
+            <li><a href="#security">7 · Security</a></li>
+            <li><a href="#cookies">8 · Cookies</a></li>
+            <li><a href="#rights">9 · Your Rights</a></li>
+            <li><a href="#links">10 · Third-Party Links</a></li>
+            <li><a href="#changes">11 · Changes</a></li>
+            <li><a href="#contact">12 · Contact</a></li>
+          </ul>
+        </aside>
+
+        <article class="article">
+          <span class="eyebrow">// Legal</span>
+          <h1>Privacy Policy</h1>
+          <p class="updated">Last updated: June 30, 2026 · Operator: Artisam Labs</p>
+
+          <h2 id="intro">1. Introduction</h2>
+          <p>
+            Artisam Labs ("we", "us", "our") operates <strong>GGG — Good Game Guild</strong> (the
+            "Service"), a trustless tournament prize-escrow and match-verification protocol on the
+            Stellar Soroban network, including this website at ggg.quest and the hosted web
+            application at app.ggg.quest. We are committed to protecting your privacy. This policy
+            explains what we collect, why, and the choices you have.
+          </p>
+
+          <h2 id="collect">2. Information We Collect</h2>
+          <p>We collect the minimum needed to run the Service. Specifically:</p>
+          <ul>
+            <li>
+              <strong>Account information</strong> — username and password (hashed with argon2) when
+              you register as an organiser, referee, or admin. We never ask for your real name.
+            </li>
+            <li>
+              <strong>Wallet addresses</strong> — public on-chain Stellar addresses you connect via
+              Freighter or any SEP-7-capable wallet. These are public identifiers, not secrets.
+            </li>
+            <li>
+              <strong>Tournament data</strong> — tournament name, game title, entry fee, referee
+              assignment, participant lists, final rankings, and payout splits you create.
+            </li>
+            <li>
+              <strong>Usage data</strong> — pages visited, browser type, IP address, and referral
+              source, collected from server logs for security and reliability.
+            </li>
+            <li>
+              <strong>Cookies</strong> — essential session and consent cookies (see §8).
+            </li>
+          </ul>
+
+          <h2 id="use">3. How We Use Your Information</h2>
+          <ul>
+            <li>To create and authenticate your account and session.</li>
+            <li>To build, simulate, and submit Soroban transactions you authorise.</li>
+            <li>To display live prize pools, registrations, and payout results.</li>
+            <li>To monitor for fraud, abuse, and to enforce the Terms of Use.</li>
+            <li>To improve the Service's reliability and performance.</li>
+            <li>To respond to your support and partnership enquiries.</li>
+          </ul>
+
+          <h2 id="share">4. Sharing Your Information</h2>
+          <p>
+            We <strong>do not sell or rent</strong> your personal information. We share data only:
+          </p>
+          <ul>
+            <li>with infrastructure providers (hosting, database, object storage) under confidentiality agreements;</li>
+            <li>when required by law or legal process; and</li>
+            <li>with your consent.</li>
+          </ul>
+          <p>
+            On-chain data (transactions, wallet addresses, contract events) is inherently public on
+            the Stellar network and is visible to anyone — see §5.
+          </p>
+
+          <h2 id="onchain">5. On-Chain Data</h2>
+          <div class="callout">
+            <strong>Important:</strong> GGG is a non-custodial protocol. Artisam Labs never holds,
+            controls, or moves your funds. Every transaction is signed client-side in your own
+            wallet and recorded publicly on the Stellar ledger. Wallet addresses, amounts, contract
+            IDs, transaction hashes, and tournament results you submit become <strong>immutable,
+            public on-chain records</strong>. They cannot be edited or deleted by us or by anyone.
+            Do not include personal information in tournament names or on-chain fields.
+          </div>
+
+          <h2 id="retain">6. Data Retention</h2>
+          <p>
+            We retain account and tournament data for as long as your account is active or as needed
+            to provide the Service. Server logs are retained for up to 90 days for security. On-chain
+            data is retained indefinitely by the Stellar network and is outside our control.
+          </p>
+
+          <h2 id="security">7. Data Security</h2>
+          <p>
+            Passwords are hashed with argon2; sessions are signed httpOnly JWTs; the server never
+            holds private keys. We apply technical and organisational safeguards appropriate to the
+            data. However, no method of internet transmission or electronic storage is completely
+            secure, so we cannot guarantee absolute security.
+          </p>
+
+          <h2 id="cookies">8. Cookies</h2>
+          <p>We use a minimal set of cookies:</p>
+          <ul>
+            <li><strong>Essential</strong> — session and CSRF tokens required for the app to function.</li>
+            <li><strong>Consent</strong> — a local record that you accepted or declined non-essential cookies.</li>
+          </ul>
+          <p>
+            We do not load third-party advertising or tracking cookies. You can clear cookies in your
+            browser settings at any time; doing so will log you out and re-show the consent banner.
+          </p>
+
+          <h2 id="rights">9. Your Rights</h2>
+          <p>You may, at any time:</p>
+          <ul>
+            <li>access the account and tournament data we hold about you;</li>
+            <li>correct inaccurate data, or delete your account (on-chain records cannot be deleted);</li>
+            <li>withdraw consent for non-essential processing; and</li>
+            <li>opt out of any non-essential communications.</li>
+          </ul>
+          <p>
+            To exercise any of these rights, email
+            <a href="mailto:ggg@artisam.xyz">ggg@artisam.xyz</a>.
+          </p>
+
+          <h2 id="links">10. Third-Party Links</h2>
+          <p>
+            The Service links to third-party tools (e.g. the Stellar Explorer, Freighter wallet,
+            and other SEP-7-capable wallets). We are not responsible for the privacy practices of
+            those external sites; we encourage you to read their policies.
+          </p>
+
+          <h2 id="changes">11. Changes to This Policy</h2>
+          <p>
+            We may update this policy. We will post the revised version on this page with a new
+            "Last updated" date. Continued use of the Service after changes constitutes acceptance
+            of the revised policy.
+          </p>
+
+          <h2 id="contact">12. Contact</h2>
+          <p>
+            Questions about this policy or your data? Email
+            <a href="mailto:ggg@artisam.xyz">ggg@artisam.xyz</a>, or visit
+            <a href="https://artisam.xyz" target="_blank" rel="noopener">artisam.xyz</a>.
+          </p>
+        </article>
+      </div>
+    </div>
+
+    <footer>
+      <div class="container">
+        <div class="footer-bottom">
+          <span>© <span class="mono" id="year">2026</span> GGG · Good Game Guild · Built by Artisam Labs</span>
+          <div class="links">
+            <a href="index.html">Home</a>
+            <a href="terms.html">Terms</a>
+            <a href="https://app.ggg.quest" target="_blank" rel="noopener">app.ggg.quest</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      var y = document.getElementById("year");
+      if (y) y.textContent = String(new Date().getFullYear());
+    </script>
+  </body>
+</html>

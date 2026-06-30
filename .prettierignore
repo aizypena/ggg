@@ -12,3 +12,6 @@ apps/web/src/contract-client
 # Authoritative project docs/specs — content is canonical, not Prettier-managed
 *.md
 docs/
+
+# Hand-authored static landing site — formatting is intentional, not Prettier-managed
+homepage/

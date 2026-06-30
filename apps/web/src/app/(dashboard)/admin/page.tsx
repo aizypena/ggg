@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/auth-guards";
 import { getAdminOverview } from "@/server/services/admin";
+import { LogoutButton } from "@/components/ui/LogoutButton";
 
 export default async function AdminPage() {
   await requireUser("ADMIN");
@@ -7,7 +8,11 @@ export default async function AdminPage() {
 
   return (
     <main className="mx-auto max-w-(--spacing-container-max) px-4 py-12 md:px-(--spacing-margin-desktop)">
-      <h1 className="text-[32px] font-bold -tracking-[0.02em] text-on-surface">Admin</h1>
+      {/* Header with title and logout button */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-[32px] font-bold -tracking-[0.02em] text-on-surface">Admin</h1>
+        <LogoutButton />
+      </div>
 
       <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-5">
         <div className="glass-panel rounded-xl p-6">

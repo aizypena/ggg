@@ -24,14 +24,17 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
 
   return (
     <main className="mx-auto max-w-(--spacing-container-max) px-4 py-12 md:px-(--spacing-margin-desktop)">
-      
       {/* Header Panel with Navigation Actions */}
       <div className="flex items-center justify-between border-b border-outline-variant pb-6">
         <div>
-          <h1 className="text-[32px] font-bold -tracking-[0.02em] text-on-surface">Tournaments</h1>
-          <p className="label-caps mt-1 text-xs text-on-surface-variant">Organizer Dashboard</p>
+          <h1 className="text-[32px] font-bold -tracking-[0.02em] text-on-surface">
+            Tournaments
+          </h1>
+          <p className="label-caps mt-1 text-xs text-on-surface-variant">
+            Organizer Dashboard
+          </p>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <Link
             href="/tournaments/new"
@@ -57,7 +60,10 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
       ) : (
         <ol className="mt-8 flex flex-col gap-4" aria-label="Tournament list">
           {items.map((t) => (
-            <li key={t.id} className="industrial-border rounded-xl bg-surface-container-low p-1 shadow-sm transition hover:border-primary/30">
+            <li
+              key={t.id}
+              className="industrial-border rounded-xl bg-surface-container-low p-1 shadow-sm transition hover:border-primary/30"
+            >
               <TournamentListRow t={t} />
             </li>
           ))}

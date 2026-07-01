@@ -134,6 +134,11 @@ export async function updateUser(
     console.log(`[admin:audit] password reset by ${actor.id}: user ${id}`);
   }
 
+  // Invalidate all existing sessions when credentials or privileges change.
+  if (input.role || input.resetPassword) {
+    await revokeAllForUser(id);
+  }
+
   return tempPassword ? { tempPassword } : {};
 }
 

@@ -206,12 +206,13 @@ describe("updateUser", () => {
     userMocks.update.mockResolvedValue({});
   });
 
-  it("updates the user role", async () => {
+  it("updates the user role and revokes sessions", async () => {
     const result = await updateUser("u2", { role: "ADMIN" }, { id: "u1", role: "ADMIN" });
     expect(userMocks.update).toHaveBeenCalledWith({
       where: { id: "u2" },
       data: { role: "ADMIN" },
     });
+    expect(revokeAllForUserMock).toHaveBeenCalledWith("u2");
     expect(result).toEqual({});
   });
 
@@ -220,12 +221,14 @@ describe("updateUser", () => {
       updateUser("u1", { role: "ORGANIZER" }, { id: "u1", role: "ADMIN" }),
     ).rejects.toMatchObject({ status: 409 });
     expect(userMocks.update).not.toHaveBeenCalled();
+    expect(revokeAllForUserMock).not.toHaveBeenCalled();
   });
 
-  it("generates and persists a temporary password", async () => {
+  it("generates and persists a temporary password and revokes sessions", async () => {
     const result = await updateUser("u2", { resetPassword: true }, { id: "u1", role: "ADMIN" });
     expect(result.tempPassword).toBeDefined();
     expect(result.tempPassword).toHaveLength(48);
+    expect(revokeAllForUserMock).toHaveBeenCalledWith("u2");
 
     const call = userMocks.update.mock.calls[0] as [
       { where: { id: string }; data: { passwordHash?: string } },

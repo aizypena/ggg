@@ -31,7 +31,7 @@ export default async function TournamentDetailPage({
   const canCancel = isOrganiser && t.status === "ACTIVE";
 
   // Extract participant wallet addresses for the counter
-  const participantAddresses = t.participants.map(p => p.playerAddr);
+  const participantAddresses = t.participants.map((p) => p.playerAddr);
 
   return (
     <main

@@ -9,7 +9,10 @@ interface TournamentCancelButtonProps {
   currentStatus: TournamentStatus;
 }
 
-export function TournamentCancelButton({ tournamentId, currentStatus }: TournamentCancelButtonProps) {
+export function TournamentCancelButton({
+  tournamentId,
+  currentStatus,
+}: TournamentCancelButtonProps) {
   const router = useRouter();
   const { status, error, execute } = useAdminAction<void>();
 

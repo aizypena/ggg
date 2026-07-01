@@ -274,10 +274,10 @@ export async function updateTournament(
   await prisma.tournament.update({ where: { id }, data });
 
   if (input.name || input.gameTitle) {
-    console.log(
-      `[admin:audit] tournament metadata updated by ${actorId}: tournament ${id}`,
-      { name: input.name, gameTitle: input.gameTitle },
-    );
+    console.log(`[admin:audit] tournament metadata updated by ${actorId}: tournament ${id}`, {
+      name: input.name,
+      gameTitle: input.gameTitle,
+    });
   }
   if (input.status === "CANCELLED") {
     console.log(`[admin:audit] tournament cancelled by ${actorId}: tournament ${id}`);

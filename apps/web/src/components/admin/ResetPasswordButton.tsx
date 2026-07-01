@@ -39,7 +39,9 @@ export function ResetPasswordButton({ userId }: ResetPasswordButtonProps) {
           <p className="data-mono mt-1 break-all text-on-surface">{data.tempPassword}</p>
         </div>
       )}
-      {status === "success" && <p className="text-sm text-success">Temporary password generated.</p>}
+      {status === "success" && (
+        <p className="text-sm text-success">Temporary password generated.</p>
+      )}
       {error && <p className="text-sm text-error">{error}</p>}
     </div>
   );

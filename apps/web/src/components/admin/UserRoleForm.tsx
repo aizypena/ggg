@@ -55,7 +55,9 @@ export function UserRoleForm({ userId, currentRole, disabled }: UserRoleFormProp
           {status === "loading" ? "Saving…" : "Update"}
         </button>
       </div>
-      {disabled && <p className="text-sm text-on-surface-variant">You cannot change your own role.</p>}
+      {disabled && (
+        <p className="text-sm text-on-surface-variant">You cannot change your own role.</p>
+      )}
       {error && <p className="text-sm text-error">{error}</p>}
       {status === "success" && <p className="text-sm text-success">Role updated.</p>}
     </form>

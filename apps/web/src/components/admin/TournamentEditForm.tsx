@@ -37,7 +37,9 @@ export function TournamentEditForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
-        <label htmlFor="name" className="label-caps text-on-surface-variant">Name</label>
+        <label htmlFor="name" className="label-caps text-on-surface-variant">
+          Name
+        </label>
         <input
           id="name"
           type="text"
@@ -47,7 +49,9 @@ export function TournamentEditForm({
         />
       </div>
       <div>
-        <label htmlFor="gameTitle" className="label-caps text-on-surface-variant">Game</label>
+        <label htmlFor="gameTitle" className="label-caps text-on-surface-variant">
+          Game
+        </label>
         <input
           id="gameTitle"
           type="text"

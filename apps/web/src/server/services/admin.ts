@@ -115,6 +115,19 @@ export async function updateUser(
     updateData.passwordHash = await hashPassword(tempPassword);
   }
 
+  if (input.role) {
+    console.log(`[admin:audit] role changed by ${actor.id}: user ${id} -> ${input.role}`);
+  }
+  if (input.resetPassword) {
+    console.log(`[admin:audit] password reset by ${actor.id}: user ${id}`);
+  }
+
+  // Invalidate existing sessions BEFORE persisting the change so a Redis failure
+  // cannot leave stale sessions attached to a new role/password.
+  if (input.role || input.resetPassword) {
+    await revokeAllForUser(id);
+  }
+
   try {
     await prisma.user.update({
       where: { id },
@@ -125,18 +138,6 @@ export async function updateUser(
       throw Object.assign(new Error("User not found"), { status: 404 });
     }
     throw e;
-  }
-
-  if (input.role) {
-    console.log(`[admin:audit] role changed by ${actor.id}: user ${id} -> ${input.role}`);
-  }
-  if (input.resetPassword) {
-    console.log(`[admin:audit] password reset by ${actor.id}: user ${id}`);
-  }
-
-  // Invalidate all existing sessions when credentials or privileges change.
-  if (input.role || input.resetPassword) {
-    await revokeAllForUser(id);
   }
 
   return tempPassword ? { tempPassword } : {};

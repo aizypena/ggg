@@ -3,7 +3,6 @@ import { requireUser } from "@/lib/auth-guards";
 import { listTournaments } from "@/server/services/tournaments";
 import { listQuerySchema } from "@/lib/validation/tournament";
 import { TournamentListRow } from "@/components/tournament/TournamentListRow";
-import { LogoutButton } from "@/components/ui/LogoutButton";
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -38,7 +37,6 @@ export default async function TournamentsPage({ searchParams }: PageProps) {
           >
             New Tournament
           </Link>
-          <LogoutButton />
         </div>
       </div>
 

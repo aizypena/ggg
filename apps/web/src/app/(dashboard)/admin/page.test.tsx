@@ -15,16 +15,13 @@ vi.mock("@/server/services/admin", () => ({
   getAdminOverview: mockGetAdminOverview,
 }));
 
-vi.mock("@/components/ui/LogoutButton", () => ({
-  LogoutButton: () => <button data-testid="logout-button">Logout</button>,
-}));
-
 import AdminPage from "./page";
 
 const ADMIN_USER = { id: "u_admin", username: "superadmin", role: "ADMIN" as const };
 
 const SAMPLE_OVERVIEW = {
   userCount: 3,
+  tournamentCount: 5,
   byStatus: { DRAFT: 1, ACTIVE: 2, FINISHED: 0, CANCELLED: 0 },
   users: [
     { id: "u1", username: "superadmin", role: "ADMIN", createdAt: new Date(0).toISOString() },

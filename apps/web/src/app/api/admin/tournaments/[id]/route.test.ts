@@ -84,7 +84,10 @@ describe("PATCH /api/admin/tournaments/[id]", () => {
   });
 
   it("updates tournament metadata", async () => {
-    const res = await PATCH(makeReq("PATCH", { name: "New Cup" }) as Parameters<typeof PATCH>[0], makeCtx());
+    const res = await PATCH(
+      makeReq("PATCH", { name: "New Cup" }) as Parameters<typeof PATCH>[0],
+      makeCtx(),
+    );
     const json = await res.json();
 
     expect(res.status).toBe(200);
@@ -93,7 +96,10 @@ describe("PATCH /api/admin/tournaments/[id]", () => {
   });
 
   it("cancels tournament in DB only", async () => {
-    const res = await PATCH(makeReq("PATCH", { status: "CANCELLED" }) as Parameters<typeof PATCH>[0], makeCtx());
+    const res = await PATCH(
+      makeReq("PATCH", { status: "CANCELLED" }) as Parameters<typeof PATCH>[0],
+      makeCtx(),
+    );
     const json = await res.json();
 
     expect(res.status).toBe(200);

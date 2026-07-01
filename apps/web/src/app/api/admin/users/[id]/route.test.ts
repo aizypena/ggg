@@ -86,12 +86,19 @@ describe("PATCH /api/admin/users/[id]", () => {
   });
 
   it("updates user role", async () => {
-    const res = await PATCH(makeReq("PATCH", { role: "ADMIN" }) as Parameters<typeof PATCH>[0], makeCtx());
+    const res = await PATCH(
+      makeReq("PATCH", { role: "ADMIN" }) as Parameters<typeof PATCH>[0],
+      makeCtx(),
+    );
     const json = await res.json();
 
     expect(res.status).toBe(200);
     expect(json.ok).toBe(true);
-    expect(updateUserMock).toHaveBeenCalledWith("u2", { role: "ADMIN" }, { id: "u1", username: "admin", role: "ADMIN" });
+    expect(updateUserMock).toHaveBeenCalledWith(
+      "u2",
+      { role: "ADMIN" },
+      { id: "u1", username: "admin", role: "ADMIN" },
+    );
   });
 
   it("returns temp password on reset", async () => {
@@ -118,7 +125,10 @@ describe("PATCH /api/admin/users/[id]", () => {
   it("maps service 409 to conflict response", async () => {
     updateUserMock.mockRejectedValue(Object.assign(new Error("Self-demote"), { status: 409 }));
 
-    const res = await PATCH(makeReq("PATCH", { role: "ORGANIZER" }) as Parameters<typeof PATCH>[0], makeCtx());
+    const res = await PATCH(
+      makeReq("PATCH", { role: "ORGANIZER" }) as Parameters<typeof PATCH>[0],
+      makeCtx(),
+    );
     const json = await res.json();
 
     expect(res.status).toBe(409);
@@ -131,7 +141,10 @@ describe("PATCH /api/admin/users/[id]", () => {
       throw new CsrfError();
     });
 
-    const res = await PATCH(makeReq("PATCH", { role: "ADMIN" }) as Parameters<typeof PATCH>[0], makeCtx());
+    const res = await PATCH(
+      makeReq("PATCH", { role: "ADMIN" }) as Parameters<typeof PATCH>[0],
+      makeCtx(),
+    );
     const json = await res.json();
 
     expect(res.status).toBe(403);

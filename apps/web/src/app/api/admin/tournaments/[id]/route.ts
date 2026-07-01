@@ -4,10 +4,7 @@ import { requireUser, AuthError, type SessionUser } from "@/lib/auth-guards";
 import { assertSameOrigin, CsrfError } from "@/lib/csrf";
 import { rateLimit } from "@/lib/rate-limit";
 import { adminUpdateTournamentSchema } from "@/lib/validation/admin";
-import {
-  getTournamentAdminDetail,
-  updateTournament,
-} from "@/server/services/admin";
+import { getTournamentAdminDetail, updateTournament } from "@/server/services/admin";
 
 interface RouteContext {
   params: Promise<{ id: string }>;

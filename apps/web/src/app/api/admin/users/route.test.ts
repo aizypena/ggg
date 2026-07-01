@@ -37,7 +37,9 @@ describe("GET /api/admin/users", () => {
 
   it("returns paginated users", async () => {
     listUsersMock.mockResolvedValue({
-      items: [{ id: "u2", username: "org", role: "ORGANIZER", createdAt: new Date(0).toISOString() }],
+      items: [
+        { id: "u2", username: "org", role: "ORGANIZER", createdAt: new Date(0).toISOString() },
+      ],
       nextCursor: null,
     });
 

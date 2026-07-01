@@ -9,7 +9,10 @@ interface TournamentCancelButtonProps {
   currentStatus: TournamentStatus;
 }
 
-export function TournamentCancelButton({ tournamentId, currentStatus }: TournamentCancelButtonProps) {
+export function TournamentCancelButton({
+  tournamentId,
+  currentStatus,
+}: TournamentCancelButtonProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [message, setMessage] = useState("");
   const router = useRouter();
@@ -50,7 +53,8 @@ export function TournamentCancelButton({ tournamentId, currentStatus }: Tourname
     <div className="space-y-2 rounded-lg border border-error/30 bg-error-container/10 p-4">
       <p className="label-caps text-error">Danger zone</p>
       <p className="text-sm text-on-surface-variant">
-        Cancelling here only updates the database status. The on-chain contract remains active until the organizer submits a cancel transaction.
+        Cancelling here only updates the database status. The on-chain contract remains active until
+        the organizer submits a cancel transaction.
       </p>
       <button
         type="button"

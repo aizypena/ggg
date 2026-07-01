@@ -145,7 +145,9 @@ export async function deleteUser(id: string, actorId: string) {
 
   if (user._count.tournaments > 0) {
     throw Object.assign(
-      new Error("Cannot delete a user who owns tournaments. Reassign or remove their tournaments first."),
+      new Error(
+        "Cannot delete a user who owns tournaments. Reassign or remove their tournaments first.",
+      ),
       { status: 409 },
     );
   }

@@ -19,7 +19,9 @@ export default async function AdminTournamentDetailPage({ params }: PageProps) {
   return (
     <main className="mx-auto max-w-(--spacing-container-max) px-4 py-12 md:px-(--spacing-margin-desktop)">
       <div className="flex items-center justify-between">
-        <h1 className="text-[32px] font-bold -tracking-[0.02em] text-on-surface">{tournament.name}</h1>
+        <h1 className="text-[32px] font-bold -tracking-[0.02em] text-on-surface">
+          {tournament.name}
+        </h1>
         <Link
           href="/admin/tournaments"
           className="label-caps text-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-acid-yellow"
@@ -46,7 +48,10 @@ export default async function AdminTournamentDetailPage({ params }: PageProps) {
             </div>
             <div>
               <dt className="label-caps text-on-surface-variant">Organizer</dt>
-              <dd className="text-on-surface">{tournament.organizerUsername} (<span className="data-mono">{tournament.organizerAddr}</span>)</dd>
+              <dd className="text-on-surface">
+                {tournament.organizerUsername} (
+                <span className="data-mono">{tournament.organizerAddr}</span>)
+              </dd>
             </div>
             <div>
               <dt className="label-caps text-on-surface-variant">Referee</dt>
@@ -54,7 +59,9 @@ export default async function AdminTournamentDetailPage({ params }: PageProps) {
             </div>
             <div>
               <dt className="label-caps text-on-surface-variant">Pool</dt>
-              <dd className="data-mono text-on-surface">{tournament.pool} {tournament.asset}</dd>
+              <dd className="data-mono text-on-surface">
+                {tournament.pool} {tournament.asset}
+              </dd>
             </div>
           </dl>
         </section>

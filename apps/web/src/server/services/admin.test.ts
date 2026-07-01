@@ -48,7 +48,16 @@ const tournamentMocks = prisma.tournament as unknown as {
   update: ReturnType<typeof vi.fn>;
 };
 
-function mockUser(overrides: Partial<{ id: string; username: string; role: string; createdAt: Date; updatedAt: Date; tournaments: unknown[] }> = {}) {
+function mockUser(
+  overrides: Partial<{
+    id: string;
+    username: string;
+    role: string;
+    createdAt: Date;
+    updatedAt: Date;
+    tournaments: unknown[];
+  }> = {},
+) {
   return {
     id: "u1",
     username: "admin",
@@ -212,7 +221,9 @@ describe("updateUser", () => {
     expect(result.tempPassword).toBeDefined();
     expect(result.tempPassword).toHaveLength(48);
 
-    const call = userMocks.update.mock.calls[0] as [{ where: { id: string }; data: { passwordHash?: string } }];
+    const call = userMocks.update.mock.calls[0] as [
+      { where: { id: string }; data: { passwordHash?: string } },
+    ];
     const passwordHash = call[0].data.passwordHash;
     expect(passwordHash).toBeDefined();
     expect(await verifyPassword(passwordHash!, result.tempPassword!)).toBe(true);
@@ -223,7 +234,9 @@ describe("updateUser", () => {
     error.code = "P2025";
     userMocks.update.mockRejectedValue(error);
 
-    await expect(updateUser("missing", { role: "ADMIN" }, { id: "u1", role: "ADMIN" })).rejects.toMatchObject({
+    await expect(
+      updateUser("missing", { role: "ADMIN" }, { id: "u1", role: "ADMIN" }),
+    ).rejects.toMatchObject({
       status: 404,
     });
   });
@@ -263,9 +276,7 @@ describe("listAllTournaments", () => {
   });
 
   it("returns tournaments with organizer and participant count", async () => {
-    tournamentMocks.findMany.mockResolvedValue([
-      mockTournament({ _count: { participants: 5 } }),
-    ]);
+    tournamentMocks.findMany.mockResolvedValue([mockTournament({ _count: { participants: 5 } })]);
 
     const { items, nextCursor } = await listAllTournaments({ take: 20 });
     expect(items).toHaveLength(1);
@@ -276,7 +287,9 @@ describe("listAllTournaments", () => {
   });
 
   it("paginates tournaments", async () => {
-    const tournaments = Array.from({ length: 21 }, (_, i) => mockTournament({ id: `t${i}`, _count: { participants: 0 } }));
+    const tournaments = Array.from({ length: 21 }, (_, i) =>
+      mockTournament({ id: `t${i}`, _count: { participants: 0 } }),
+    );
     tournamentMocks.findMany.mockResolvedValue(tournaments);
 
     const { items, nextCursor } = await listAllTournaments({ take: 20 });

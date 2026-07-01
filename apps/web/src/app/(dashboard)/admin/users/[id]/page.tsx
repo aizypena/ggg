@@ -22,7 +22,9 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
   return (
     <main className="mx-auto max-w-(--spacing-container-max) px-4 py-12 md:px-(--spacing-margin-desktop)">
       <div className="flex items-center justify-between">
-        <h1 className="text-[32px] font-bold -tracking-[0.02em] text-on-surface">{user.username}</h1>
+        <h1 className="text-[32px] font-bold -tracking-[0.02em] text-on-surface">
+          {user.username}
+        </h1>
         <Link
           href="/admin/users"
           className="label-caps text-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-acid-yellow"
@@ -71,10 +73,15 @@ export default async function AdminUserDetailPage({ params }: PageProps) {
         ) : (
           <ul className="space-y-2">
             {user.tournaments.map((t) => (
-              <li key={t.id} className="flex items-center justify-between rounded-lg bg-surface-container-low p-4">
+              <li
+                key={t.id}
+                className="flex items-center justify-between rounded-lg bg-surface-container-low p-4"
+              >
                 <div>
                   <p className="font-medium text-on-surface">{t.name}</p>
-                  <p className="text-sm text-on-surface-variant">{t.gameTitle} · {t.status}</p>
+                  <p className="text-sm text-on-surface-variant">
+                    {t.gameTitle} · {t.status}
+                  </p>
                 </div>
                 <Link
                   href={`/admin/tournaments/${t.id}`}

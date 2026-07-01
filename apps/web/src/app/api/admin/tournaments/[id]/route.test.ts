@@ -92,7 +92,7 @@ describe("PATCH /api/admin/tournaments/[id]", () => {
 
     expect(res.status).toBe(200);
     expect(json.ok).toBe(true);
-    expect(updateTournamentMock).toHaveBeenCalledWith("t1", { name: "New Cup" });
+    expect(updateTournamentMock).toHaveBeenCalledWith("t1", { name: "New Cup" }, "u1");
   });
 
   it("cancels tournament in DB only", async () => {
@@ -104,7 +104,7 @@ describe("PATCH /api/admin/tournaments/[id]", () => {
 
     expect(res.status).toBe(200);
     expect(json.ok).toBe(true);
-    expect(updateTournamentMock).toHaveBeenCalledWith("t1", { status: "CANCELLED" });
+    expect(updateTournamentMock).toHaveBeenCalledWith("t1", { status: "CANCELLED" }, "u1");
   });
 
   it("rejects invalid body with 400", async () => {

@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/password";
+import { revokeAllForUser } from "@/lib/session-store";
 import type { AppRole } from "../../../types/next-auth";
 import type {
   AdminListQueryInput,
@@ -126,6 +127,13 @@ export async function updateUser(
     throw e;
   }
 
+  if (input.role) {
+    console.log(`[admin:audit] role changed by ${actor.id}: user ${id} -> ${input.role}`);
+  }
+  if (input.resetPassword) {
+    console.log(`[admin:audit] password reset by ${actor.id}: user ${id}`);
+  }
+
   return tempPassword ? { tempPassword } : {};
 }
 
@@ -152,7 +160,9 @@ export async function deleteUser(id: string, actorId: string) {
     );
   }
 
+  await revokeAllForUser(id);
   await prisma.user.delete({ where: { id } });
+  console.log(`[admin:audit] user deleted by ${actorId}: user ${id}`);
 }
 
 export async function listAllTournaments(q: AdminListQueryInput) {
@@ -232,22 +242,44 @@ export async function getTournamentAdminDetail(id: string) {
   };
 }
 
-export async function updateTournament(id: string, input: AdminUpdateTournamentInput) {
+export async function updateTournament(
+  id: string,
+  input: AdminUpdateTournamentInput,
+  actorId: string,
+) {
+  const tournament = await prisma.tournament.findUnique({
+    where: { id },
+    select: { status: true },
+  });
+
+  if (!tournament) {
+    throw Object.assign(new Error("Tournament not found"), { status: 404 });
+  }
+
   const data: { name?: string; gameTitle?: string; status?: "CANCELLED"; cancelledAt?: Date } = {};
 
   if (input.name) data.name = input.name;
   if (input.gameTitle) data.gameTitle = input.gameTitle;
   if (input.status === "CANCELLED") {
+    if (tournament.status === "CANCELLED") {
+      throw Object.assign(new Error("Tournament is already cancelled"), { status: 409 });
+    }
+    if (tournament.status === "FINISHED") {
+      throw Object.assign(new Error("Cannot cancel a finished tournament"), { status: 409 });
+    }
     data.status = "CANCELLED";
     data.cancelledAt = new Date();
   }
 
-  try {
-    await prisma.tournament.update({ where: { id }, data });
-  } catch (e) {
-    if (e instanceof Error && "code" in e && e.code === "P2025") {
-      throw Object.assign(new Error("Tournament not found"), { status: 404 });
-    }
-    throw e;
+  await prisma.tournament.update({ where: { id }, data });
+
+  if (input.name || input.gameTitle) {
+    console.log(
+      `[admin:audit] tournament metadata updated by ${actorId}: tournament ${id}`,
+      { name: input.name, gameTitle: input.gameTitle },
+    );
+  }
+  if (input.status === "CANCELLED") {
+    console.log(`[admin:audit] tournament cancelled by ${actorId}: tournament ${id}`);
   }
 }

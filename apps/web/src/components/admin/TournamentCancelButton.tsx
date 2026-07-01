@@ -1,21 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { TournamentStatus } from "@/generated/prisma/enums";
+import { useAdminAction, parseAdminResponse } from "./use-admin-action";
 
 interface TournamentCancelButtonProps {
   tournamentId: string;
   currentStatus: TournamentStatus;
 }
 
-export function TournamentCancelButton({
-  tournamentId,
-  currentStatus,
-}: TournamentCancelButtonProps) {
-  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
-  const [message, setMessage] = useState("");
+export function TournamentCancelButton({ tournamentId, currentStatus }: TournamentCancelButtonProps) {
   const router = useRouter();
+  const { status, error, execute } = useAdminAction<void>();
 
   if (currentStatus === "CANCELLED" || currentStatus === "FINISHED") {
     return <p className="text-sm text-on-surface-variant">This tournament cannot be cancelled.</p>;
@@ -30,23 +26,15 @@ export function TournamentCancelButton({
       return;
     }
 
-    setStatus("loading");
-    setMessage("");
-
-    const res = await fetch(`/api/admin/tournaments/${tournamentId}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ status: "CANCELLED" }),
+    await execute(async () => {
+      const res = await fetch(`/api/admin/tournaments/${tournamentId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ status: "CANCELLED" }),
+      });
+      await parseAdminResponse(res);
+      router.refresh();
     });
-    const json = await res.json();
-
-    if (!res.ok) {
-      setStatus("error");
-      setMessage(json.error?.message || "Failed to cancel tournament");
-      return;
-    }
-
-    router.refresh();
   }
 
   return (
@@ -64,7 +52,7 @@ export function TournamentCancelButton({
       >
         {status === "loading" ? "Cancelling…" : "Cancel Tournament (DB only)"}
       </button>
-      {message && <p className="text-sm text-error">{message}</p>}
+      {error && <p className="text-sm text-error">{error}</p>}
     </div>
   );
 }

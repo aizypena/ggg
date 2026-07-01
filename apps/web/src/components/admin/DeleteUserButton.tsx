@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAdminAction, parseAdminResponse } from "./use-admin-action";
 
 interface DeleteUserButtonProps {
   userId: string;
@@ -10,26 +10,17 @@ interface DeleteUserButtonProps {
 }
 
 export function DeleteUserButton({ userId, username, disabled }: DeleteUserButtonProps) {
-  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
-  const [message, setMessage] = useState("");
   const router = useRouter();
+  const { status, error, execute } = useAdminAction<void>();
 
   async function handleDelete() {
     if (!confirm(`Delete user ${username}? This cannot be undone.`)) return;
 
-    setStatus("loading");
-    setMessage("");
-
-    const res = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
-    const json = await res.json();
-
-    if (!res.ok) {
-      setStatus("error");
-      setMessage(json.error?.message || "Failed to delete user");
-      return;
-    }
-
-    router.push("/admin/users");
+    await execute(async () => {
+      const res = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
+      await parseAdminResponse(res);
+      router.push("/admin/users");
+    });
   }
 
   if (disabled) {
@@ -46,7 +37,7 @@ export function DeleteUserButton({ userId, username, disabled }: DeleteUserButto
       >
         {status === "loading" ? "Deleting…" : "Delete User"}
       </button>
-      {message && <p className="text-sm text-error">{message}</p>}
+      {error && <p className="text-sm text-error">{error}</p>}
     </div>
   );
 }

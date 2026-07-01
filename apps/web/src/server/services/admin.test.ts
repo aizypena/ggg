@@ -18,9 +18,13 @@ vi.mock("@/lib/db", () => ({
     },
   },
 }));
+vi.mock("@/lib/session-store", () => ({
+  revokeAllForUser: vi.fn(),
+}));
 
 import { prisma } from "@/lib/db";
 import { verifyPassword } from "@/lib/password";
+import { revokeAllForUser } from "@/lib/session-store";
 import {
   getAdminOverview,
   listUsers,
@@ -47,6 +51,8 @@ const tournamentMocks = prisma.tournament as unknown as {
   findUnique: ReturnType<typeof vi.fn>;
   update: ReturnType<typeof vi.fn>;
 };
+
+const revokeAllForUserMock = revokeAllForUser as ReturnType<typeof vi.fn>;
 
 function mockUser(
   overrides: Partial<{
@@ -250,6 +256,7 @@ describe("deleteUser", () => {
   it("deletes a user with no tournaments", async () => {
     userMocks.findUnique.mockResolvedValue({ id: "u2", _count: { tournaments: 0 } });
     await deleteUser("u2", "u1");
+    expect(revokeAllForUserMock).toHaveBeenCalledWith("u2");
     expect(userMocks.delete).toHaveBeenCalledWith({ where: { id: "u2" } });
   });
 
@@ -328,11 +335,12 @@ describe("getTournamentAdminDetail", () => {
 describe("updateTournament", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    tournamentMocks.findUnique.mockResolvedValue(mockTournament({ status: "ACTIVE" }));
     tournamentMocks.update.mockResolvedValue({});
   });
 
   it("updates name and gameTitle", async () => {
-    await updateTournament("t1", { name: "New Name", gameTitle: "New Game" });
+    await updateTournament("t1", { name: "New Name", gameTitle: "New Game" }, "admin");
     expect(tournamentMocks.update).toHaveBeenCalledWith({
       where: { id: "t1" },
       data: { name: "New Name", gameTitle: "New Game" },
@@ -340,7 +348,7 @@ describe("updateTournament", () => {
   });
 
   it("marks tournament as cancelled in DB only", async () => {
-    await updateTournament("t1", { status: "CANCELLED" });
+    await updateTournament("t1", { status: "CANCELLED" }, "admin");
     const call = tournamentMocks.update.mock.calls[0] as [
       { where: { id: string }; data: { status: string; cancelledAt: Date } },
     ];
@@ -349,10 +357,28 @@ describe("updateTournament", () => {
   });
 
   it("throws 404 when tournament does not exist", async () => {
-    const error = new Error("Record not found") as Error & { code: string };
-    error.code = "P2025";
-    tournamentMocks.update.mockRejectedValue(error);
+    tournamentMocks.findUnique.mockResolvedValue(null);
 
-    await expect(updateTournament("missing", { name: "X" })).rejects.toMatchObject({ status: 404 });
+    await expect(updateTournament("missing", { name: "X" }, "admin")).rejects.toMatchObject({
+      status: 404,
+    });
+  });
+
+  it("throws 409 when tournament is already cancelled", async () => {
+    tournamentMocks.findUnique.mockResolvedValue(mockTournament({ status: "CANCELLED" }));
+
+    await expect(updateTournament("t1", { status: "CANCELLED" }, "admin")).rejects.toMatchObject({
+      status: 409,
+    });
+    expect(tournamentMocks.update).not.toHaveBeenCalled();
+  });
+
+  it("throws 409 when tournament is finished", async () => {
+    tournamentMocks.findUnique.mockResolvedValue(mockTournament({ status: "FINISHED" }));
+
+    await expect(updateTournament("t1", { status: "CANCELLED" }, "admin")).rejects.toMatchObject({
+      status: 409,
+    });
+    expect(tournamentMocks.update).not.toHaveBeenCalled();
   });
 });

@@ -1,19 +1,11 @@
 import { type NextRequest } from "next/server";
-import { ok, err } from "@/lib/api";
-import { requireUser, AuthError } from "@/lib/auth-guards";
+import { requireAdminApi, ok, err } from "../lib/guard";
 import { adminListQuerySchema } from "@/lib/validation/admin";
 import { listAllTournaments } from "@/server/services/admin";
 
 export async function GET(req: NextRequest): Promise<Response> {
-  try {
-    await requireUser("ADMIN");
-  } catch (e) {
-    if (e instanceof AuthError) {
-      const code = e.status === 403 ? "FORBIDDEN" : "UNAUTHORIZED";
-      return err(code, e.message, e.status);
-    }
-    throw e;
-  }
+  const authError = await requireAdminApi();
+  if (authError) return authError;
 
   const q = adminListQuerySchema.safeParse(Object.fromEntries(new URL(req.url).searchParams));
   if (!q.success) {

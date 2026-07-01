@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useAdminAction, parseAdminResponse } from "./use-admin-action";
 
 interface TournamentEditFormProps {
   tournamentId: string;
@@ -16,40 +17,27 @@ export function TournamentEditForm({
 }: TournamentEditFormProps) {
   const [name, setName] = useState(currentName);
   const [gameTitle, setGameTitle] = useState(currentGameTitle);
-  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
-  const [message, setMessage] = useState("");
   const router = useRouter();
+  const { status, error, execute } = useAdminAction<void>();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    setStatus("loading");
-    setMessage("");
-
-    const res = await fetch(`/api/admin/tournaments/${tournamentId}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name, gameTitle }),
+    await execute(async () => {
+      const res = await fetch(`/api/admin/tournaments/${tournamentId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name, gameTitle }),
+      });
+      await parseAdminResponse(res);
+      router.refresh();
     });
-    const json = await res.json();
-
-    if (!res.ok) {
-      setStatus("error");
-      setMessage(json.error?.message || "Failed to update tournament");
-      return;
-    }
-
-    setStatus("done");
-    setMessage("Tournament updated");
-    router.refresh();
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
-        <label htmlFor="name" className="label-caps text-on-surface-variant">
-          Name
-        </label>
+        <label htmlFor="name" className="label-caps text-on-surface-variant">Name</label>
         <input
           id="name"
           type="text"
@@ -59,9 +47,7 @@ export function TournamentEditForm({
         />
       </div>
       <div>
-        <label htmlFor="gameTitle" className="label-caps text-on-surface-variant">
-          Game
-        </label>
+        <label htmlFor="gameTitle" className="label-caps text-on-surface-variant">Game</label>
         <input
           id="gameTitle"
           type="text"
@@ -77,11 +63,8 @@ export function TournamentEditForm({
       >
         {status === "loading" ? "Saving…" : "Update Metadata"}
       </button>
-      {message && (
-        <p className={status === "error" ? "text-sm text-error" : "text-sm text-success"}>
-          {message}
-        </p>
-      )}
+      {error && <p className="text-sm text-error">{error}</p>}
+      {status === "success" && <p className="text-sm text-success">Tournament updated.</p>}
     </form>
   );
 }

@@ -1,39 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useAdminAction, parseAdminResponse } from "./use-admin-action";
 
 interface ResetPasswordButtonProps {
   userId: string;
 }
 
 export function ResetPasswordButton({ userId }: ResetPasswordButtonProps) {
-  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
-  const [tempPassword, setTempPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const { status, error, data, execute, reset } = useAdminAction<{ tempPassword?: string }>();
 
   async function handleReset() {
     if (!confirm("Generate a new temporary password?")) return;
 
-    setStatus("loading");
-    setTempPassword("");
-    setMessage("");
-
-    const res = await fetch(`/api/admin/users/${userId}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ resetPassword: true }),
+    reset();
+    await execute(async () => {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ resetPassword: true }),
+      });
+      return parseAdminResponse<{ tempPassword?: string }>(res);
     });
-    const json = await res.json();
-
-    if (!res.ok) {
-      setStatus("error");
-      setMessage(json.error?.message || "Failed to reset password");
-      return;
-    }
-
-    setStatus("done");
-    setTempPassword(json.data.tempPassword || "");
-    setMessage("Temporary password generated. Copy it now — it will not be shown again.");
   }
 
   return (
@@ -46,17 +33,14 @@ export function ResetPasswordButton({ userId }: ResetPasswordButtonProps) {
       >
         {status === "loading" ? "Resetting…" : "Reset Password"}
       </button>
-      {tempPassword && (
+      {data?.tempPassword && (
         <div className="rounded-lg bg-surface-container-low p-3">
           <p className="label-caps text-on-surface-variant">Temporary password</p>
-          <p className="data-mono mt-1 break-all text-on-surface">{tempPassword}</p>
+          <p className="data-mono mt-1 break-all text-on-surface">{data.tempPassword}</p>
         </div>
       )}
-      {message && (
-        <p className={status === "error" ? "text-sm text-error" : "text-sm text-success"}>
-          {message}
-        </p>
-      )}
+      {status === "success" && <p className="text-sm text-success">Temporary password generated.</p>}
+      {error && <p className="text-sm text-error">{error}</p>}
     </div>
   );
 }

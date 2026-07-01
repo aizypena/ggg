@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import type { Role } from "@/generated/prisma/enums";
+import { useAdminAction, parseAdminResponse } from "./use-admin-action";
 
 interface UserRoleFormProps {
   userId: string;
@@ -12,33 +13,22 @@ interface UserRoleFormProps {
 
 export function UserRoleForm({ userId, currentRole, disabled }: UserRoleFormProps) {
   const [role, setRole] = useState<Role>(currentRole);
-  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
-  const [message, setMessage] = useState("");
   const router = useRouter();
+  const { status, error, execute } = useAdminAction<void>();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (role === currentRole) return;
 
-    setStatus("loading");
-    setMessage("");
-
-    const res = await fetch(`/api/admin/users/${userId}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ role }),
+    await execute(async () => {
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      await parseAdminResponse(res);
+      router.refresh();
     });
-    const json = await res.json();
-
-    if (!res.ok) {
-      setStatus("error");
-      setMessage(json.error?.message || "Failed to update role");
-      return;
-    }
-
-    setStatus("done");
-    setMessage("Role updated");
-    router.refresh();
   }
 
   return (
@@ -65,14 +55,9 @@ export function UserRoleForm({ userId, currentRole, disabled }: UserRoleFormProp
           {status === "loading" ? "Saving…" : "Update"}
         </button>
       </div>
-      {disabled && (
-        <p className="text-sm text-on-surface-variant">You cannot change your own role.</p>
-      )}
-      {message && (
-        <p className={status === "error" ? "text-sm text-error" : "text-sm text-success"}>
-          {message}
-        </p>
-      )}
+      {disabled && <p className="text-sm text-on-surface-variant">You cannot change your own role.</p>}
+      {error && <p className="text-sm text-error">{error}</p>}
+      {status === "success" && <p className="text-sm text-success">Role updated.</p>}
     </form>
   );
 }

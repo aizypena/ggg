@@ -31,9 +31,9 @@ export async function tick(): Promise<void> {
     },
     select: { id: true, contractId: true },
   });
-  
+
   console.log(`[subscriber] found ${tournaments.length} tournaments to poll`);
-  
+
   for (const t of tournaments) {
     if (!t.contractId) continue;
     try {

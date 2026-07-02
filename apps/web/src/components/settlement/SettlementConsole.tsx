@@ -8,7 +8,7 @@ import { PodiumSlot } from "./PodiumSlot";
 import { SettlementModal } from "./SettlementModal";
 import { WalletButton } from "@/components/tournament/WalletButton";
 import { signAndSubmit } from "@/lib/wallet";
-import { BackButton } from "@/components/ui/BackButton"; 
+import { BackButton } from "@/components/ui/BackButton";
 
 type Phase = "idle" | "submitting" | "signing" | "error";
 

@@ -23,9 +23,7 @@ describe("BackButton", () => {
 
   it("renders custom children", () => {
     render(<BackButton>Back to tournaments</BackButton>);
-    expect(
-      screen.getByRole("button", { name: "Back to tournaments" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Back to tournaments" })).toBeInTheDocument();
   });
 
   it("renders an icon", () => {
@@ -41,8 +39,6 @@ describe("BackButton", () => {
 
   it("accepts a custom aria-label", () => {
     render(<BackButton aria-label="Go back">Return</BackButton>);
-    expect(
-      screen.getByRole("button", { name: "Go back" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Go back" })).toBeInTheDocument();
   });
 });

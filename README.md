@@ -343,16 +343,25 @@ Root `package.json` also exposes `build`/`start` scripts (`pnpm --filter web bui
 
 **CI** ([`.github/workflows/ci.yml`](./.github/workflows/ci.yml)): the `app` and `contract` jobs run on pushes to `main` and on pull requests; they must pass before merge, though branch protection enforcing that is a one-time maintainer step not yet enabled (see `RUNBOOK.md`). Playwright E2E runs out-of-band against Testnet, not on the merge gate.
 
-- **Live web URL:** `[PLACEHOLDER: Live app URL]`
+- **Live web URL:** https://ggg.quest
 - **RPC / network:** Testnet by default; switch to `public` (Mainnet) via env.
 
 ---
 
 ## Demo
 
-- **Live app:** `[PLACEHOLDER: Live app URL]`
-- **Demo video:** `[PLACEHOLDER: Demo video URL]`
-- **Screenshot:** `[PLACEHOLDER: screenshot]`
+- **Live app:** https://ggg.quest
+- **Demo video:** https://drive.google.com/drive/u/2/folders/14AP_jPxcJG1TzICtBd9eY2c2q2hIwYh0
+- **Screenshot:**
+  <img width="1904" height="763" alt="Screenshot 2026-07-15 at 11 47 43 PM" src="https://github.com/user-attachments/assets/a72908d3-f0dc-476a-a4bf-f7830af3c1bb" />
+  <img width="1920" height="838" alt="Screenshot 2026-07-09 at 5 22 39 PM" src="https://github.com/user-attachments/assets/0682487e-1cf7-4528-bd5d-97b006772dcf" />
+  <img width="1920" height="900" alt="Screenshot 2026-07-15 at 11 48 08 PM" src="https://github.com/user-attachments/assets/327be1b5-1061-4d78-a781-c500926c70b0" />
+  <img width="1920" height="901" alt="Screenshot 2026-07-15 at 11 48 52 PM" src="https://github.com/user-attachments/assets/32a00850-7d7c-45e1-a87d-69f40da028fd" />
+  <img width="1920" height="902" alt="Screenshot 2026-07-15 at 11 48 28 PM" src="https://github.com/user-attachments/assets/b96a2af2-c109-4d23-b3e6-64f8671000b9" />
+  <img width="1913" height="900" alt="Screenshot 2026-07-15 at 11 49 28 PM" src="https://github.com/user-attachments/assets/6b06d549-a5b3-4dd0-b4eb-5928842dc4dc" />
+
+
+
 
 See [`docs/pitch-deck.md`](./docs/pitch-deck.md) for the full pitch and the sub-two-minute demo walkthrough.
 
@@ -362,11 +371,8 @@ See [`docs/pitch-deck.md`](./docs/pitch-deck.md) for the full pitch and the sub-
 
 | Name | Role | Contact |
 |---|---|---|
-| Julyza Peña | `[PLACEHOLDER: role]` | `[PLACEHOLDER: contact]` |
-| Mark Hugh Neri | `[PLACEHOLDER: role]` | `[PLACEHOLDER: contact]` |
-| `[PLACEHOLDER: name]` | `[PLACEHOLDER: role]` | `[PLACEHOLDER: contact]` |
+| Julyza Peña | Lead Developer | jbpena101@gmail.com |
 
-> [inferred] Contributor names are taken from git history; roles/contacts are placeholders.
 
 ---
 

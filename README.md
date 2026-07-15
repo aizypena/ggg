@@ -359,8 +359,10 @@ Root `package.json` also exposes `build`/`start` scripts (`pnpm --filter web bui
   <img width="1920" height="901" alt="Screenshot 2026-07-15 at 11 48 52 PM" src="https://github.com/user-attachments/assets/32a00850-7d7c-45e1-a87d-69f40da028fd" />
   <img width="1920" height="902" alt="Screenshot 2026-07-15 at 11 48 28 PM" src="https://github.com/user-attachments/assets/b96a2af2-c109-4d23-b3e6-64f8671000b9" />
   <img width="1913" height="900" alt="Screenshot 2026-07-15 at 11 49 28 PM" src="https://github.com/user-attachments/assets/6b06d549-a5b3-4dd0-b4eb-5928842dc4dc" />
-
-
+  <img width="1908" height="900" alt="Screenshot 2026-07-15 at 11 53 39 PM" src="https://github.com/user-attachments/assets/d1d90de8-43d0-4b5e-ac3e-e71eda827cbc" />
+  <img width="1906" height="902" alt="Screenshot 2026-07-15 at 11 55 19 PM" src="https://github.com/user-attachments/assets/80e31dbb-0cb7-47c5-a543-93a367b4ebfe" />
+  <img width="1908" height="899" alt="Screenshot 2026-07-15 at 11 56 20 PM" src="https://github.com/user-attachments/assets/f3938a63-ed7d-4252-b7fd-d8670a4fb97c" />
+  <img width="1920" height="903" alt="Screenshot 2026-07-15 at 11 55 47 PM" src="https://github.com/user-attachments/assets/2ebc5c9e-16ac-4062-8e7c-6541cf946b83" />
 
 
 See [`docs/pitch-deck.md`](./docs/pitch-deck.md) for the full pitch and the sub-two-minute demo walkthrough.
